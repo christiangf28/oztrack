@@ -18,7 +18,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#FBF7F5"
       },
       "package": "com.oztrack.app",
@@ -48,6 +48,14 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FBF7F5",
+          "image": "./assets/splash.png",
+          "resizeMode": "contain"
+        }
+      ],
       [
         "expo-notifications",
         {
