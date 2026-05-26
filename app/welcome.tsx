@@ -16,6 +16,7 @@ import Animated, {
   useAnimatedStyle,
   interpolate,
   Extrapolation,
+  SharedValue,
 } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '@/components/ui/ThemeContext';
@@ -60,7 +61,7 @@ const slides = [
   },
 ];
 
-function Slide({ item, index, scrollX }: { item: typeof slides[0]; index: number; scrollX: Animated.SharedValue<number> }) {
+function Slide({ item, index, scrollX }: { item: typeof slides[0]; index: number; scrollX: SharedValue<number> }) {
   const { colors } = useTheme();
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -71,7 +72,7 @@ function Slide({ item, index, scrollX }: { item: typeof slides[0]; index: number
     return { opacity, transform: [{ translateY }, { scale }] };
   });
 
-  const gradient = colors.gradients[item.gradientKey] as string[];
+  const gradient = colors.gradients[item.gradientKey] as [string, string, ...string[]];
 
   return (
     <View style={[styles.slide, { width }]}>
@@ -168,7 +169,7 @@ export default function WelcomeScreen() {
 
         <TouchableOpacity onPress={goNext} activeOpacity={0.85}>
           <LinearGradient
-            colors={colors.gradients.button as string[]}
+            colors={colors.gradients.button as [string, string, ...string[]]}
             style={styles.primaryButton}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}

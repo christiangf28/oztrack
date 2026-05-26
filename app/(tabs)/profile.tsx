@@ -62,9 +62,9 @@ export default function ProfileScreen() {
       Alert.alert('Sin datos', 'Aún no tienes registros para exportar.');
       return;
     }
-    const headers = 'Fecha,Náuseas,Fatiga,Ánimo,Energía,Apetito,Agua (ml),Peso (kg),Visitas al baño,Notas';
+    const headers = 'Fecha,Náuseas,Fatiga,Ánimo,Apetito,Agua (ml),Peso (kg),Visitas al baño,Notas';
     const rows = (logs as any[]).map(l =>
-      `${l.date},${l.nausea},${l.fatigue},${l.mood},${l.energy},${l.appetite ?? ''},${l.water_ml},${l.weight ?? ''},${l.bowel_movements ?? ''},"${String(l.meal_notes ?? '').replace(/"/g, '""')}"`
+      `${l.date},${l.nausea},${l.fatigue},${l.mood},${l.appetite ?? ''},${l.water_ml},${l.weight ?? ''},${l.bowel_movements ?? ''},"${String(l.meal_notes ?? '').replace(/"/g, '""')}"`
     );
     try {
       await Share.share({ message: [headers, ...rows].join('\n'), title: 'Oztrack — Mis registros' });
@@ -116,7 +116,7 @@ export default function ProfileScreen() {
               <Text style={[styles.sectionLabel, { color: colors.text.muted }]}>MI PERFIL</Text>
               <InfoRow icon="medical" color={colors.primary} label="Medicamento" value={MED_LABELS[profile.medication] ?? profile.medication} colors={colors} />
               <InfoRow icon="flag" color={colors.sage} label="Objetivo" value={GOAL_LABELS[profile.goals] ?? profile.goals} colors={colors} />
-              <InfoRow icon="calendar" color={colors.lavender} label="Miembro desde" value={new Date(profile.created_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long' })} colors={colors} last />
+              <InfoRow icon="calendar" color={colors.lavender} label="Miembro desde" value={profile.created_at ? new Date(profile.created_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long' }) : '—'} colors={colors} last />
             </Card>
           )}
 

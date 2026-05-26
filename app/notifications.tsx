@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Switch,
   TouchableOpacity, Alert, ActivityIndicator, TextInput,
+  KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -92,7 +93,7 @@ function DayPicker({ selected, onChange, colors }: { selected: number; onChange:
         return (
           <TouchableOpacity key={d.value} onPress={() => onChange(d.value)} activeOpacity={0.7} style={{ alignItems: 'center', gap: 4 }}>
             {active ? (
-              <LinearGradient colors={colors.gradients.button as string[]} style={styles.dayPill}>
+              <LinearGradient colors={colors.gradients.button as [string, string, ...string[]]} style={styles.dayPill}>
                 <Text style={styles.dayTextActive}>{d.label}</Text>
               </LinearGradient>
             ) : (
@@ -151,7 +152,8 @@ export default function NotificationsScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 48 }}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 48 }}>
 
         {/* Header */}
         <View style={[styles.header, { borderBottomColor: colors.border }]}>
@@ -271,6 +273,7 @@ export default function NotificationsScreen() {
 
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

@@ -368,7 +368,7 @@ export default function ProgressScreen() {
 
           {/* Streak */}
           <LinearGradient
-            colors={(streak >= 7 ? ['#E8926A', '#D4748F'] : streak >= 3 ? ['#D4748F', '#B85C75'] : colors.gradients.button as string[]) as [string, string]}
+            colors={(streak >= 7 ? ['#E8926A', '#D4748F'] : streak >= 3 ? ['#D4748F', '#B85C75'] : colors.gradients.button as [string, string, ...string[]]) as [string, string]}
             start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
             style={styles.streakCard}
           >
@@ -514,7 +514,7 @@ export default function ProgressScreen() {
               ))
               : (
                 <View style={{ alignItems: 'center', paddingVertical: 8 }}>
-                  <Text style={[{ textAlign: 'center', lineHeight: 22, ...typography.body }, { color: colors.text.secondary }]}>
+                  <Text style={[{ textAlign: 'center', ...typography.body, lineHeight: 22 }, { color: colors.text.secondary }]}>
                     Desbloquea Premium para ver perspectivas personalizadas basadas en tus patrones
                   </Text>
                   <Button title="Desbloquear" onPress={() => router.push('/paywall')} variant="outline" size="sm" style={{ marginTop: 14 }} />

@@ -51,13 +51,13 @@ export const lightColors = {
   },
 
   gradients: {
-    hero: ['#F2C4CE', '#E8A0B4', '#D4748F'] as string[],
-    heroSoft: ['#FDF0F3', '#FAE4EB', '#F5CFD9'] as string[],
-    card: ['#FFFFFF', '#FFF5F7'] as string[],
-    sage: ['#EDF4F1', '#D5EAE3'] as string[],
-    premium: ['#C9B4D4', '#A889C0', '#8B6BAA'] as string[],
-    warm: ['#FDF8F5', '#FAF0EC'] as string[],
-    button: ['#E08AA0', '#D4748F', '#C25E7A'] as string[],
+    hero: ['#F2C4CE', '#E8A0B4', '#D4748F'] as [string, string, ...string[]],
+    heroSoft: ['#FDF0F3', '#FAE4EB', '#F5CFD9'] as [string, string, ...string[]],
+    card: ['#FFFFFF', '#FFF5F7'] as [string, string, ...string[]],
+    sage: ['#EDF4F1', '#D5EAE3'] as [string, string, ...string[]],
+    premium: ['#C9B4D4', '#A889C0', '#8B6BAA'] as [string, string, ...string[]],
+    warm: ['#FDF8F5', '#FAF0EC'] as [string, string, ...string[]],
+    button: ['#E08AA0', '#D4748F', '#C25E7A'] as [string, string, ...string[]],
   },
 
   symptom: {
@@ -107,13 +107,13 @@ export const darkColors = {
   },
 
   gradients: {
-    hero: ['#6B2540', '#8B3555', '#D4748F'] as string[],
-    heroSoft: ['#2D1520', '#3A1D28', '#4A2535'] as string[],
-    card: ['#251620', '#2D1A24'] as string[],
-    sage: ['#162620', '#1E342C'] as string[],
-    premium: ['#3D2855', '#553570', '#7B4B96'] as string[],
-    warm: ['#1F1318', '#251820'] as string[],
-    button: ['#E08AA0', '#D4748F', '#C25E7A'] as string[],
+    hero: ['#6B2540', '#8B3555', '#D4748F'] as [string, string, ...string[]],
+    heroSoft: ['#2D1520', '#3A1D28', '#4A2535'] as [string, string, ...string[]],
+    card: ['#251620', '#2D1A24'] as [string, string, ...string[]],
+    sage: ['#162620', '#1E342C'] as [string, string, ...string[]],
+    premium: ['#3D2855', '#553570', '#7B4B96'] as [string, string, ...string[]],
+    warm: ['#1F1318', '#251820'] as [string, string, ...string[]],
+    button: ['#E08AA0', '#D4748F', '#C25E7A'] as [string, string, ...string[]],
   },
 
   symptom: {

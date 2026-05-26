@@ -8,21 +8,23 @@ export interface UserProfile {
   medication: Medication;
   start_date: string;
   goals: Goal;
-  created_at: string;
+  created_at?: string;
+  gender?: string;
+  age_range?: string;
 }
 
 export interface DailyLog {
   id?: string;
   user_id: string;
   date: string;
-  nausea: number;       // 1-5
-  fatigue: number;      // 1-5
-  appetite: number;     // 1-5
-  mood: number;         // 1-5
-  energy: number;       // 1-5
+  nausea: number;
+  fatigue: number;
+  appetite: number;
+  mood: number;
   weight?: number;
   water_ml: number;
   meal_notes?: string;
+  bowel_movements?: number;
 }
 
 export interface ChatMessage {

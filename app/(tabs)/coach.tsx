@@ -103,7 +103,8 @@ export default function CoachScreen() {
         messages: history,
       });
 
-      const replyContent = response.content[0].type === 'text' ? stripMarkdown(response.content[0].text) : '';
+      const first = response.content?.[0];
+      const replyContent = first?.type === 'text' ? stripMarkdown(first.text) : '';
       const assistantMsg: ChatMessage = { user_id: user.id, role: 'assistant', content: replyContent };
       setMessages(prev => [...prev, assistantMsg]);
 
@@ -135,14 +136,15 @@ export default function CoachScreen() {
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       {/* Header */}
       <LinearGradient
-        colors={colors.gradients.heroSoft as string[]}
+        colors={colors.gradients.heroSoft as [string, string, ...string[]]}
         style={styles.header}
         start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
       >
         <View style={styles.avatarWrap}>
-          <LinearGradient colors={colors.gradients.button as string[]} style={styles.avatar}>
+          <LinearGradient colors={colors.gradients.button as [string, string, ...string[]]} style={styles.avatar}>
             <Text style={styles.avatarEmoji}>🤖</Text>
           </LinearGradient>
           <View style={[styles.onlineDot, { backgroundColor: colors.success, borderColor: colors.surface }]} />
@@ -170,33 +172,32 @@ export default function CoachScreen() {
       />
 
       {/* Input */}
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <View style={[styles.inputBar, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
-          <TextInput
-            style={[styles.input, {
-              backgroundColor: colors.backgroundWarm,
-              borderColor: colors.border,
-              color: colors.text.primary,
-            }]}
-            value={input}
-            onChangeText={setInput}
-            placeholder="Pregúntame sobre tu experiencia con GLP-1..."
-            placeholderTextColor={colors.text.muted}
-            multiline
-            returnKeyType="send"
-            onSubmitEditing={() => sendMessage()}
-          />
-          <TouchableOpacity
-            style={[styles.sendBtn, (!input.trim() || thinking) && styles.sendDisabled]}
-            onPress={() => sendMessage()}
-            disabled={!input.trim() || thinking}
-            activeOpacity={0.8}
-          >
-            <LinearGradient colors={colors.gradients.button as string[]} style={styles.sendGradient}>
-              <Ionicons name="send" size={18} color="#fff" />
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
+      <View style={[styles.inputBar, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
+        <TextInput
+          style={[styles.input, {
+            backgroundColor: colors.backgroundWarm,
+            borderColor: colors.border,
+            color: colors.text.primary,
+          }]}
+          value={input}
+          onChangeText={setInput}
+          placeholder="Pregúntame sobre tu experiencia con GLP-1..."
+          placeholderTextColor={colors.text.muted}
+          multiline
+          returnKeyType="send"
+          onSubmitEditing={() => sendMessage()}
+        />
+        <TouchableOpacity
+          style={[styles.sendBtn, (!input.trim() || thinking) && styles.sendDisabled]}
+          onPress={() => sendMessage()}
+          disabled={!input.trim() || thinking}
+          activeOpacity={0.8}
+        >
+          <LinearGradient colors={colors.gradients.button as [string, string, ...string[]]} style={styles.sendGradient}>
+            <Ionicons name="send" size={18} color="#fff" />
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -213,7 +214,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         </LinearGradient>
       )}
       {isUser ? (
-        <LinearGradient colors={colors.gradients.button as string[]} style={[styles.bubble, styles.bubbleUser]}>
+        <LinearGradient colors={colors.gradients.button as [string, string, ...string[]]} style={[styles.bubble, styles.bubbleUser]}>
           <Text style={styles.bubbleTextUser}>{message.content}</Text>
         </LinearGradient>
       ) : (
@@ -277,7 +278,7 @@ function PaywallPrompt() {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
       <LinearGradient
-        colors={colors.gradients.heroSoft as string[]}
+        colors={colors.gradients.heroSoft as [string, string, ...string[]]}
         style={styles.paywallGradient}
         start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
       >

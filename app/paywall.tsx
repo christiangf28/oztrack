@@ -82,14 +82,14 @@ export default function PaywallScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 48 }}>
 
         {/* Hero */}
-        <LinearGradient colors={heroColors as string[]} style={styles.heroSection}>
+        <LinearGradient colors={heroColors as [string, string, ...string[]]} style={styles.heroSection}>
           <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
             <View style={[styles.closeCircle, { backgroundColor: colors.surface + 'CC' }]}>
               <Ionicons name="close" size={20} color={colors.text.secondary} />
             </View>
           </TouchableOpacity>
 
-          <LinearGradient colors={colors.gradients.button as string[]} style={[styles.heroIcon, colors.shadow.lg as any]}>
+          <LinearGradient colors={colors.gradients.button as [string, string, ...string[]]} style={[styles.heroIcon, colors.shadow.lg as any]}>
             <Text style={styles.heroEmoji}>✨</Text>
           </LinearGradient>
           <Text style={[styles.heroTitle, { color: colors.text.primary }]}>Oztrack Premium</Text>
@@ -196,7 +196,7 @@ function PlanCard({ label, price, note, active, best, onPress, colors }: {
         </LinearGradient>
       )}
       <LinearGradient
-        colors={active ? colors.gradients.heroSoft as string[] : [colors.surface, colors.surface]}
+        colors={active ? colors.gradients.heroSoft as [string, string, ...string[]] : [colors.surface, colors.surface]}
         style={[
           styles.planCard,
           { borderColor: active ? colors.primary : colors.border },
