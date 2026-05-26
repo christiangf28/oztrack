@@ -136,7 +136,7 @@ export default function CoachScreen() {
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
       {/* Header */}
       <LinearGradient
         colors={colors.gradients.heroSoft as [string, string, ...string[]]}

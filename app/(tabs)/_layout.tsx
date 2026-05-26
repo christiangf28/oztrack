@@ -14,7 +14,7 @@ function TabIcon({ name, focused, color }: { name: string; focused: boolean; col
 }
 
 export default function TabLayout() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
 
   return (
@@ -22,7 +22,7 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.text.secondary,
+        tabBarInactiveTintColor: isDark ? '#C8A0B4' : '#5C3A4A',
         tabBarStyle: {
           borderTopWidth: StyleSheet.hairlineWidth,
           borderTopColor: colors.border,
