@@ -20,6 +20,18 @@ import { ChatMessage } from '@/types';
 
 const COACH_INTRO_KEY = 'oztrack_coach_intro_shown';
 
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/\*(.*?)\*/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^[-*]\s/gm, '• ')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/^---+$/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 const SUGGESTIONS = [
   '¿Por qué tengo náuseas?',
   'Consejos para el apetito',
@@ -54,7 +66,7 @@ export default function CoachScreen() {
               {
                 user_id: user.id,
                 role: 'assistant',
-                content: '¡Hola! Soy Oz Coach 🌸 Estoy aquí para acompañarte en tu journey con GLP-1. Puedo ayudarte con dudas sobre síntomas, efectos secundarios, alimentación y hábitos saludables.',
+                content: '¡Hola! Soy Oz Coach 🌸 Estoy aquí para acompañarte en tu experiencia con GLP-1. Puedo ayudarte con dudas sobre síntomas, efectos secundarios, alimentación y hábitos saludables.',
               },
               {
                 user_id: user.id,
@@ -91,7 +103,7 @@ export default function CoachScreen() {
         messages: history,
       });
 
-      const replyContent = response.content[0].type === 'text' ? response.content[0].text : '';
+      const replyContent = response.content[0].type === 'text' ? stripMarkdown(response.content[0].text) : '';
       const assistantMsg: ChatMessage = { user_id: user.id, role: 'assistant', content: replyContent };
       setMessages(prev => [...prev, assistantMsg]);
 
@@ -158,7 +170,7 @@ export default function CoachScreen() {
       />
 
       {/* Input */}
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={[styles.inputBar, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
           <TextInput
             style={[styles.input, {
@@ -168,7 +180,7 @@ export default function CoachScreen() {
             }]}
             value={input}
             onChangeText={setInput}
-            placeholder="Pregúntame sobre tu journey GLP-1..."
+            placeholder="Pregúntame sobre tu experiencia con GLP-1..."
             placeholderTextColor={colors.text.muted}
             multiline
             returnKeyType="send"

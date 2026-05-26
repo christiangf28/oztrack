@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
+import { useFocusEffect } from 'expo-router';
 import {
   View, Text, StyleSheet, ScrollView, TextInput,
   TouchableOpacity, Alert,
@@ -48,9 +49,11 @@ export default function TrackScreen() {
   const [bowelCount, setBowelCount] = useState(0);
   const [bowelEnabled, setBowelEnabled] = useState(false);
 
-  useEffect(() => {
-    AsyncStorage.getItem(BOWEL_KEY).then(v => setBowelEnabled(v === 'true'));
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      AsyncStorage.getItem(BOWEL_KEY).then(v => setBowelEnabled(v === 'true'));
+    }, [])
+  );
 
   const gender = useGender();
   const styles = useMemo(() => makeStyles(colors), [colors]);

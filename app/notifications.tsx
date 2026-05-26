@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Switch,
-  TouchableOpacity, Alert, ActivityIndicator,
+  TouchableOpacity, Alert, ActivityIndicator, TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -12,9 +12,6 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { typography, radius } from '@/components/ui/theme';
 import { useNotifications, saveAndSchedule, requestNotifPermission, NotifPrefs } from '@/hooks/useNotifications';
-
-// Horas disponibles para seleccionar (6am – 10pm)
-const HOURS = Array.from({ length: 17 }, (_, i) => i + 6);
 
 // Weekday expo-notifications: 1=Dom, 2=Lun, 3=Mar, 4=Mié, 5=Jue, 6=Vie, 7=Sáb
 const DAYS = [
@@ -33,26 +30,57 @@ function formatHour(h: number): string {
   return `${display}:00 ${suffix}`;
 }
 
-function HourPicker({ selected, onChange, colors }: { selected: number; onChange: (h: number) => void; colors: any }) {
+function TimePicker({ selected, onChange, colors }: { selected: number; onChange: (h: number) => void; colors: any }) {
+  const [text, setText] = useState(formatHour(selected));
+
+  useEffect(() => { setText(formatHour(selected)); }, [selected]);
+
+  function parseHour(raw: string): number | null {
+    const clean = raw.trim().toUpperCase().replace(/\s+/g, '');
+    let m = clean.match(/^(\d{1,2})(?::\d{2})?$/);
+    if (m) { const h = parseInt(m[1]); if (h >= 0 && h <= 23) return h; }
+    m = clean.match(/^(\d{1,2})(?::\d{2})?(AM|PM)$/);
+    if (m) {
+      let h = parseInt(m[1]);
+      if (m[2] === 'PM' && h < 12) h += 12;
+      if (m[2] === 'AM' && h === 12) h = 0;
+      if (h >= 0 && h <= 23) return h;
+    }
+    return null;
+  }
+
+  function commit() {
+    const h = parseHour(text);
+    if (h !== null) { onChange(h); setText(formatHour(h)); }
+    else setText(formatHour(selected));
+  }
+
+  function step(delta: number) {
+    const h = Math.max(0, Math.min(23, selected + delta));
+    onChange(h);
+    setText(formatHour(h));
+  }
+
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.hourRow}>
-      {HOURS.map(h => {
-        const active = selected === h;
-        return (
-          <TouchableOpacity key={h} onPress={() => onChange(h)} activeOpacity={0.7}>
-            {active ? (
-              <LinearGradient colors={colors.gradients.button as string[]} style={styles.hourPill}>
-                <Text style={styles.hourTextActive}>{formatHour(h)}</Text>
-              </LinearGradient>
-            ) : (
-              <View style={[styles.hourPill, { backgroundColor: colors.backgroundWarm, borderWidth: 1.5, borderColor: colors.border }]}>
-                <Text style={[styles.hourText, { color: colors.text.secondary }]}>{formatHour(h)}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        );
-      })}
-    </ScrollView>
+    <View style={styles.timeRow}>
+      <TouchableOpacity onPress={() => step(-1)} style={[styles.timeBtn, { backgroundColor: colors.backgroundWarm, borderColor: colors.border }]}>
+        <Ionicons name="remove" size={20} color={colors.text.secondary} />
+      </TouchableOpacity>
+      <TextInput
+        style={[styles.timeInput, { backgroundColor: colors.backgroundWarm, borderColor: colors.primary, color: colors.text.primary }]}
+        value={text}
+        onChangeText={setText}
+        onBlur={commit}
+        onSubmitEditing={commit}
+        returnKeyType="done"
+        textAlign="center"
+        placeholder="8:00 AM"
+        placeholderTextColor={colors.text.muted}
+      />
+      <TouchableOpacity onPress={() => step(1)} style={[styles.timeBtn, { backgroundColor: colors.backgroundWarm, borderColor: colors.border }]}>
+        <Ionicons name="add" size={20} color={colors.text.secondary} />
+      </TouchableOpacity>
+    </View>
   );
 }
 
@@ -159,7 +187,7 @@ export default function NotificationsScreen() {
             {current.dailyEnabled && (
               <View style={[styles.pickerSection, { borderTopColor: colors.border }]}>
                 <Text style={[styles.pickerLabel, { color: colors.text.muted }]}>Hora del recordatorio</Text>
-                <HourPicker
+                <TimePicker
                   selected={current.dailyHour}
                   onChange={h => update({ dailyHour: h })}
                   colors={colors}
@@ -197,7 +225,7 @@ export default function NotificationsScreen() {
                   colors={colors}
                 />
                 <Text style={[styles.pickerLabel, { color: colors.text.muted, marginTop: 16 }]}>Hora</Text>
-                <HourPicker
+                <TimePicker
                   selected={current.injectionHour}
                   onChange={h => update({ injectionHour: h })}
                   colors={colors}
@@ -266,13 +294,9 @@ const styles = StyleSheet.create({
   pickerSection: { marginTop: 16, paddingTop: 16, borderTopWidth: 1 },
   pickerLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 0.8, marginBottom: 10 },
 
-  hourRow: { gap: 8, paddingRight: 4 },
-  hourPill: {
-    height: 36, paddingHorizontal: 14,
-    borderRadius: radius.full, alignItems: 'center', justifyContent: 'center',
-  },
-  hourText: { fontSize: 13, fontWeight: '500' },
-  hourTextActive: { fontSize: 13, fontWeight: '700', color: '#fff' },
+  timeRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  timeBtn: { width: 44, height: 44, borderRadius: 22, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  timeInput: { flex: 1, height: 52, borderWidth: 2, borderRadius: radius.lg, fontSize: 18, fontWeight: '700' },
 
   dayRow: { flexDirection: 'row', justifyContent: 'space-between' },
   dayPill: {
