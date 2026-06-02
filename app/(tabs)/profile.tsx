@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Switch, Share,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Switch, Share, Modal,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -31,6 +31,7 @@ export default function ProfileScreen() {
   const { colors, isDark, mode, setMode } = useTheme();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [bowelEnabled, setBowelEnabled] = useState(false);
+  const [editField, setEditField] = useState<'medication' | 'goals' | null>(null);
 
   useEffect(() => {
     AsyncStorage.getItem(BOWEL_KEY).then(v => setBowelEnabled(v === 'true'));
@@ -81,6 +82,48 @@ export default function ProfileScreen() {
     ]);
   }
 
+  async function handleUpdateProfile(field: 'medication' | 'goals', value: string) {
+    if (!user || !profile) return;
+    const { error } = await supabase.from('users').update({ [field]: value }).eq('id', user.id);
+    if (!error) setProfile({ ...profile, [field]: value });
+    setEditField(null);
+  }
+
+  async function handleDeleteAccount() {
+    Alert.alert(
+      'Eliminar cuenta',
+      'Se eliminarán permanentemente tu cuenta y todos tus datos de salud. Esta acción no se puede deshacer.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Eliminar', style: 'destructive',
+          onPress: () => Alert.alert(
+            '¿Segura?',
+            'Esta es tu última oportunidad. Todo será eliminado definitivamente.',
+            [
+              { text: 'Cancelar', style: 'cancel' },
+              {
+                text: 'Sí, eliminar todo', style: 'destructive',
+                onPress: async () => {
+                  try {
+                    if (!user) return;
+                    await supabase.from('daily_logs').delete().eq('user_id', user.id);
+                    await supabase.from('users').delete().eq('id', user.id);
+                    await supabase.rpc('delete_user');
+                    await AsyncStorage.clear();
+                    router.replace('/welcome');
+                  } catch {
+                    Alert.alert('Error', 'No se pudo eliminar la cuenta. Escríbenos a privacy@oztrack.app');
+                  }
+                },
+              },
+            ],
+          ),
+        },
+      ],
+    );
+  }
+
   const themeOptions: { label: string; value: 'light' | 'dark' | 'system'; icon: any }[] = [
     { label: 'Claro', value: 'light', icon: 'sunny-outline' },
     { label: 'Oscuro', value: 'dark', icon: 'moon-outline' },
@@ -114,8 +157,8 @@ export default function ProfileScreen() {
           {profile && (
             <Card style={styles.card}>
               <Text style={[styles.sectionLabel, { color: colors.text.muted }]}>MI PERFIL</Text>
-              <InfoRow icon="medical" color={colors.primary} label="Medicamento" value={MED_LABELS[profile.medication] ?? profile.medication} colors={colors} />
-              <InfoRow icon="flag" color={colors.sage} label="Objetivo" value={GOAL_LABELS[profile.goals] ?? profile.goals} colors={colors} />
+              <EditableInfoRow icon="medical" color={colors.primary} label="Medicamento" value={MED_LABELS[profile.medication] ?? profile.medication} colors={colors} onPress={() => setEditField('medication')} />
+              <EditableInfoRow icon="flag" color={colors.sage} label="Objetivo" value={GOAL_LABELS[profile.goals] ?? profile.goals} colors={colors} onPress={() => setEditField('goals')} />
               <InfoRow icon="calendar" color={colors.lavender} label="Miembro desde" value={profile.created_at ? new Date(profile.created_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long' }) : '—'} colors={colors} last />
             </Card>
           )}
@@ -202,10 +245,83 @@ export default function ProfileScreen() {
             <Text style={[styles.signOutText, { color: colors.error }]}>Cerrar sesión</Text>
           </TouchableOpacity>
 
+          {/* Eliminar cuenta */}
+          <TouchableOpacity
+            style={[styles.deleteRow, { borderColor: colors.error + '40' }]}
+            onPress={handleDeleteAccount}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="trash-outline" size={16} color={colors.error} />
+            <Text style={[styles.deleteText, { color: colors.error }]}>Eliminar mi cuenta y datos</Text>
+          </TouchableOpacity>
+
           <Text style={[styles.version, { color: colors.text.muted }]}>Oztrack v1.0 · hecho con 🌸</Text>
+
+          {/* Links legales */}
+          <View style={styles.legalRow}>
+            <TouchableOpacity onPress={() => router.push('/legal/privacy')}>
+              <Text style={[styles.legalLink, { color: colors.text.muted }]}>Política de Privacidad</Text>
+            </TouchableOpacity>
+            <Text style={[styles.legalSep, { color: colors.text.muted }]}>·</Text>
+            <TouchableOpacity onPress={() => router.push('/legal/terms')}>
+              <Text style={[styles.legalLink, { color: colors.text.muted }]}>Términos de Servicio</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
+
+      <Modal visible={editField !== null} transparent animationType="slide" onRequestClose={() => setEditField(null)}>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setEditField(null)}>
+          <View style={[styles.modalSheet, { backgroundColor: colors.surface }]}>
+            <View style={[styles.modalHandle, { backgroundColor: colors.border }]} />
+            <Text style={[styles.modalTitle, { color: colors.text.primary }]}>
+              {editField === 'medication' ? 'Medicamento' : 'Objetivo'}
+            </Text>
+            {editField === 'medication'
+              ? Object.entries(MED_LABELS).map(([key, label]) => (
+                  <TouchableOpacity
+                    key={key}
+                    style={[styles.modalOption, profile?.medication === key && { backgroundColor: colors.primaryLight + '30' }]}
+                    onPress={() => handleUpdateProfile('medication', key)}
+                  >
+                    <Text style={[styles.modalOptionText, { color: colors.text.primary }, profile?.medication === key && { color: colors.primary, fontWeight: '700' }]}>{label}</Text>
+                    {profile?.medication === key && <Ionicons name="checkmark" size={18} color={colors.primary} />}
+                  </TouchableOpacity>
+                ))
+              : Object.entries(GOAL_LABELS).map(([key, label]) => (
+                  <TouchableOpacity
+                    key={key}
+                    style={[styles.modalOption, profile?.goals === key && { backgroundColor: colors.primaryLight + '30' }]}
+                    onPress={() => handleUpdateProfile('goals', key)}
+                  >
+                    <Text style={[styles.modalOptionText, { color: colors.text.primary }, profile?.goals === key && { color: colors.primary, fontWeight: '700' }]}>{label}</Text>
+                    {profile?.goals === key && <Ionicons name="checkmark" size={18} color={colors.primary} />}
+                  </TouchableOpacity>
+                ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
+  );
+}
+
+function EditableInfoRow({ icon, color, label, value, colors, onPress }: any) {
+  return (
+    <TouchableOpacity
+      style={[{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },
+        { borderBottomWidth: 1, borderBottomColor: colors.borderLight }]}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <View style={{ width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: color + '18' }}>
+        <Ionicons name={icon} size={16} color={color} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontSize: 11, color: colors.text.muted, fontWeight: '500', marginBottom: 2 }}>{label}</Text>
+        <Text style={{ ...typography.bodyMed, color: colors.text.primary }}>{value}</Text>
+      </View>
+      <Ionicons name="create-outline" size={16} color={colors.text.muted} />
+    </TouchableOpacity>
   );
 }
 
@@ -294,6 +410,23 @@ function makeStyles(colors: any) {
     signOutIcon: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
     signOutText: { fontSize: 15, fontWeight: '600' },
 
+    deleteRow: {
+      flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+      borderRadius: radius.xl, paddingVertical: 12, borderWidth: 1,
+    },
+    deleteText: { fontSize: 13, fontWeight: '500' },
+
     version: { ...typography.caption, textAlign: 'center', marginTop: 4 },
+
+    legalRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 4, paddingBottom: 8 },
+    legalLink: { fontSize: 12, textDecorationLine: 'underline' },
+    legalSep: { fontSize: 12 },
+
+    modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' },
+    modalSheet: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, paddingBottom: 40, gap: 4 },
+    modalHandle: { width: 36, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 16 },
+    modalTitle: { fontSize: 16, fontWeight: '700', marginBottom: 8 },
+    modalOption: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14, paddingHorizontal: 12, borderRadius: 12 },
+    modalOptionText: { fontSize: 15 },
   });
 }

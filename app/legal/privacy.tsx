@@ -27,7 +27,7 @@ export default function PrivacyScreen() {
           Los mensajes enviados al Coach de IA son procesados por la API Claude de Anthropic. Los mensajes se guardan en nuestra base de datos para mantener el historial de conversación. No usamos tus mensajes para entrenar modelos de IA.
         </Section>
         <Section title="Retención de datos" colors={colors}>
-          Puedes eliminar tu cuenta y todos los datos asociados en cualquier momento contactando a soporte. Los datos se retienen mientras tu cuenta esté activa.
+          Puedes eliminar tu cuenta y todos los datos asociados en cualquier momento desde la sección Perfil → "Eliminar mi cuenta y datos". Los datos se eliminan de forma permanente e inmediata. También puedes contactarnos en privacy@oztrack.app.
         </Section>
         <Section title="Contacto" colors={colors}>
           Para consultas de privacidad, contacta: privacy@oztrack.app
