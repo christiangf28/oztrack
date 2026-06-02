@@ -64,6 +64,12 @@
         }
       ],
       "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Oztrack necesita acceso a tus fotos para cambiar tu foto de perfil."
+        }
+      ],
       "expo-localization",
       "react-native-edge-to-edge"
     ],

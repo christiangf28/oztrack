@@ -1,10 +1,18 @@
 import { useEffect, useState, useMemo } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Switch, Share, Modal,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Switch, Share, Modal, Image,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BOWEL_KEY = 'oztrack_bowel_tracker_enabled';
+const AVATAR_KEY = 'oztrack_avatar';
+const AVATAR_EMOJIS = [
+  '🌸','🌺','🌻','🌼','🌷','🌹','💐','🍀',
+  '🦋','🐝','🌈','⭐','✨','💫','🌙','☀️',
+  '💪','🧘','💚','💙','💜','🩷','❤️','🎯',
+  '🌿','🍃','🌱','🪷','🫀','🧬','💊','🐾',
+];
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -31,10 +39,12 @@ export default function ProfileScreen() {
   const { colors, isDark, mode, setMode } = useTheme();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [bowelEnabled, setBowelEnabled] = useState(false);
-  const [editField, setEditField] = useState<'medication' | 'goals' | null>(null);
+  const [editField, setEditField] = useState<'medication' | 'goals' | 'avatar' | null>(null);
+  const [avatar, setAvatar] = useState<{ type: 'emoji' | 'photo'; value: string } | null>(null);
 
   useEffect(() => {
     AsyncStorage.getItem(BOWEL_KEY).then(v => setBowelEnabled(v === 'true'));
+    AsyncStorage.getItem(AVATAR_KEY).then(v => { if (v) setAvatar(JSON.parse(v)); });
   }, []);
 
   function toggleBowel(v: boolean) {
@@ -83,6 +93,31 @@ export default function ProfileScreen() {
         onPress: async () => { await supabase.auth.signOut(); router.replace('/(auth)/login'); },
       },
     ]);
+  }
+
+  async function pickPhoto() {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') { Alert.alert('Permiso requerido', 'Necesitamos acceso a tu galería.'); return; }
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.7 });
+    if (!result.canceled && result.assets[0]) {
+      const next = { type: 'photo' as const, value: result.assets[0].uri };
+      setAvatar(next);
+      AsyncStorage.setItem(AVATAR_KEY, JSON.stringify(next));
+      setEditField(null);
+    }
+  }
+
+  function pickEmoji(emoji: string) {
+    const next = { type: 'emoji' as const, value: emoji };
+    setAvatar(next);
+    AsyncStorage.setItem(AVATAR_KEY, JSON.stringify(next));
+    setEditField(null);
+  }
+
+  function removeAvatar() {
+    setAvatar(null);
+    AsyncStorage.removeItem(AVATAR_KEY);
+    setEditField(null);
   }
 
   async function handleUpdateProfile(field: 'medication' | 'goals', value: string) {
@@ -146,9 +181,19 @@ export default function ProfileScreen() {
           colors={isDark ? ['#2D1520', '#1F1318', colors.background] : ['#FDE8ED', '#FAD9E3', colors.background]}
           style={styles.hero}
         >
-          <LinearGradient colors={colors.gradients.button} style={styles.avatar}>
-            <Text style={styles.avatarInitial}>{initial}</Text>
-          </LinearGradient>
+          <TouchableOpacity onPress={() => setEditField('avatar')} activeOpacity={0.8}>
+            <LinearGradient colors={avatar?.type === 'photo' ? ['transparent','transparent'] : colors.gradients.button} style={styles.avatar}>
+              {avatar?.type === 'photo'
+                ? <Image source={{ uri: avatar.value }} style={styles.avatarPhoto} />
+                : avatar?.type === 'emoji'
+                  ? <Text style={styles.avatarEmoji}>{avatar.value}</Text>
+                  : <Text style={styles.avatarInitial}>{initial}</Text>
+              }
+            </LinearGradient>
+            <View style={[styles.avatarEditBadge, { backgroundColor: colors.primary }]}>
+              <Ionicons name="camera" size={12} color="#fff" />
+            </View>
+          </TouchableOpacity>
           <Text style={[styles.email, { color: colors.text.secondary }]}>{user?.email}</Text>
           {isPremium && (
             <LinearGradient colors={colors.gradients.premium} style={styles.premiumBadge}>
@@ -282,9 +327,31 @@ export default function ProfileScreen() {
           <TouchableOpacity activeOpacity={1} style={[styles.modalSheet, { backgroundColor: colors.surface }]}>
             <View style={[styles.modalHandle, { backgroundColor: colors.border }]} />
             <Text style={[styles.modalTitle, { color: colors.text.primary }]}>
-              {editField === 'medication' ? 'Medicamento' : 'Objetivo'}
+              {editField === 'avatar' ? 'Foto de perfil' : editField === 'medication' ? 'Medicamento' : 'Objetivo'}
             </Text>
-            {editField === 'medication'
+            {editField === 'avatar' ? (
+              <View>
+                <TouchableOpacity style={styles.modalOption} onPress={pickPhoto}>
+                  <Ionicons name="image-outline" size={20} color={colors.primary} />
+                  <Text style={[styles.modalOptionText, { color: colors.text.primary, flex: 1, marginLeft: 12 }]}>Elegir de galería</Text>
+                </TouchableOpacity>
+                <Text style={[{ fontSize: 11, fontWeight: '700', letterSpacing: 1, color: colors.text.muted, marginTop: 12, marginBottom: 4 }]}>EMOJI</Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                  {AVATAR_EMOJIS.map(e => (
+                    <TouchableOpacity key={e} onPress={() => pickEmoji(e)}
+                      style={[styles.emojiBtn, avatar?.value === e && { borderColor: colors.primary, borderWidth: 2 }]}>
+                      <Text style={{ fontSize: 24 }}>{e}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                {avatar && (
+                  <TouchableOpacity style={[styles.modalOption, { marginTop: 12 }]} onPress={removeAvatar}>
+                    <Ionicons name="trash-outline" size={18} color={colors.error} />
+                    <Text style={[styles.modalOptionText, { color: colors.error, flex: 1, marginLeft: 12 }]}>Eliminar foto</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            ) : editField === 'medication'
               ? Object.entries(MED_LABELS).map(([key, label]) => (
                   <TouchableOpacity
                     key={key}
@@ -435,5 +502,10 @@ function makeStyles(colors: any) {
     modalTitle: { fontSize: 16, fontWeight: '700', marginBottom: 8 },
     modalOption: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14, paddingHorizontal: 12, borderRadius: 12 },
     modalOptionText: { fontSize: 15 },
+
+    avatarPhoto: { width: 84, height: 84, borderRadius: 42 },
+    avatarEmoji: { fontSize: 44 },
+    avatarEditBadge: { position: 'absolute', bottom: 2, right: 2, width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+    emojiBtn: { width: 48, height: 48, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent', borderWidth: 1.5, borderColor: 'transparent' },
   });
 }
