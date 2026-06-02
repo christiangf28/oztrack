@@ -1,8 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Switch, Share, Modal, Image,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Switch, Share, Modal,
 } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BOWEL_KEY = 'oztrack_bowel_tracker_enabled';
@@ -40,7 +39,7 @@ export default function ProfileScreen() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [bowelEnabled, setBowelEnabled] = useState(false);
   const [editField, setEditField] = useState<'medication' | 'goals' | 'avatar' | null>(null);
-  const [avatar, setAvatar] = useState<{ type: 'emoji' | 'photo'; value: string } | null>(null);
+  const [avatar, setAvatar] = useState<{ type: 'emoji'; value: string } | null>(null);
 
   useEffect(() => {
     AsyncStorage.getItem(BOWEL_KEY).then(v => setBowelEnabled(v === 'true'));
@@ -93,18 +92,6 @@ export default function ProfileScreen() {
         onPress: async () => { await supabase.auth.signOut(); router.replace('/(auth)/login'); },
       },
     ]);
-  }
-
-  async function pickPhoto() {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') { Alert.alert('Permiso requerido', 'Necesitamos acceso a tu galería.'); return; }
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.7 });
-    if (!result.canceled && result.assets[0]) {
-      const next = { type: 'photo' as const, value: result.assets[0].uri };
-      setAvatar(next);
-      AsyncStorage.setItem(AVATAR_KEY, JSON.stringify(next));
-      setEditField(null);
-    }
   }
 
   function pickEmoji(emoji: string) {
@@ -182,12 +169,10 @@ export default function ProfileScreen() {
           style={styles.hero}
         >
           <TouchableOpacity onPress={() => setEditField('avatar')} activeOpacity={0.8}>
-            <LinearGradient colors={avatar?.type === 'photo' ? ['transparent','transparent'] : colors.gradients.button} style={styles.avatar}>
-              {avatar?.type === 'photo'
-                ? <Image source={{ uri: avatar.value }} style={styles.avatarPhoto} />
-                : avatar?.type === 'emoji'
-                  ? <Text style={styles.avatarEmoji}>{avatar.value}</Text>
-                  : <Text style={styles.avatarInitial}>{initial}</Text>
+            <LinearGradient colors={colors.gradients.button} style={styles.avatar}>
+              {avatar?.type === 'emoji'
+                ? <Text style={styles.avatarEmoji}>{avatar.value}</Text>
+                : <Text style={styles.avatarInitial}>{initial}</Text>
               }
             </LinearGradient>
             <View style={[styles.avatarEditBadge, { backgroundColor: colors.primary }]}>
@@ -331,11 +316,7 @@ export default function ProfileScreen() {
             </Text>
             {editField === 'avatar' ? (
               <View>
-                <TouchableOpacity style={styles.modalOption} onPress={pickPhoto}>
-                  <Ionicons name="image-outline" size={20} color={colors.primary} />
-                  <Text style={[styles.modalOptionText, { color: colors.text.primary, flex: 1, marginLeft: 12 }]}>Elegir de galería</Text>
-                </TouchableOpacity>
-                <Text style={[{ fontSize: 11, fontWeight: '700', letterSpacing: 1, color: colors.text.muted, marginTop: 12, marginBottom: 4 }]}>EMOJI</Text>
+                <Text style={[{ fontSize: 11, fontWeight: '700', letterSpacing: 1, color: colors.text.muted, marginBottom: 4 }]}>EMOJI</Text>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                   {AVATAR_EMOJIS.map(e => (
                     <TouchableOpacity key={e} onPress={() => pickEmoji(e)}

@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/splash.png",
-      "resizeMode": "contain",
+      "resizeMode": "cover",
       "backgroundColor": "#FBF7F5"
     },
     "ios": {
@@ -53,7 +53,7 @@
         {
           "backgroundColor": "#FBF7F5",
           "image": "./assets/splash.png",
-          "resizeMode": "contain"
+          "resizeMode": "cover"
         }
       ],
       [
@@ -64,12 +64,6 @@
         }
       ],
       "expo-font",
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "Oztrack necesita acceso a tus fotos para cambiar tu foto de perfil."
-        }
-      ],
       "expo-localization",
       "react-native-edge-to-edge"
     ],
