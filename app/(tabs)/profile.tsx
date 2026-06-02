@@ -85,7 +85,11 @@ export default function ProfileScreen() {
   async function handleUpdateProfile(field: 'medication' | 'goals', value: string) {
     if (!user || !profile) return;
     const { error } = await supabase.from('users').update({ [field]: value }).eq('id', user.id);
-    if (!error) setProfile({ ...profile, [field]: value });
+    if (error) {
+      Alert.alert('Error', 'No se pudo guardar el cambio. Intenta de nuevo.');
+      return;
+    }
+    setProfile({ ...profile, [field]: value });
     setEditField(null);
   }
 
@@ -229,7 +233,7 @@ export default function ProfileScreen() {
             </View>
             <MenuItem icon="download-outline" color="#5BA8D0" label="Exportar mis datos" detail="CSV con todos tus registros" onPress={exportCSV} colors={colors} />
             <MenuItem icon="globe-outline" color={colors.sage} label="Idioma" detail="Español" onPress={() => Alert.alert('Idioma', 'Actualmente disponible solo en español.\n\nInglés próximamente 🌍')} colors={colors} />
-            <MenuItem icon="document-text-outline" color={colors.lavender} label="Política de Privacidad" onPress={() => router.push('/legal/privacy')} colors={colors} last />
+            <MenuItem icon="document-text-outline" color={colors.lavender} label="Política de Privacidad" onPress={() => router.push('/legal/privacy')} colors={colors} />
             <MenuItem icon="shield-checkmark-outline" color="#E8926A" label="Términos de Servicio" onPress={() => router.push('/legal/terms')} colors={colors} last />
           </Card>
 
@@ -272,7 +276,7 @@ export default function ProfileScreen() {
 
       <Modal visible={editField !== null} transparent animationType="slide" onRequestClose={() => setEditField(null)}>
         <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setEditField(null)}>
-          <View style={[styles.modalSheet, { backgroundColor: colors.surface }]}>
+          <TouchableOpacity activeOpacity={1} style={[styles.modalSheet, { backgroundColor: colors.surface }]}>
             <View style={[styles.modalHandle, { backgroundColor: colors.border }]} />
             <Text style={[styles.modalTitle, { color: colors.text.primary }]}>
               {editField === 'medication' ? 'Medicamento' : 'Objetivo'}
@@ -298,7 +302,7 @@ export default function ProfileScreen() {
                     {profile?.goals === key && <Ionicons name="checkmark" size={18} color={colors.primary} />}
                   </TouchableOpacity>
                 ))}
-          </View>
+          </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
     </SafeAreaView>
