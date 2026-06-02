@@ -47,7 +47,10 @@ export default function ProfileScreen() {
   useEffect(() => {
     if (!user) return;
     supabase.from('users').select('*').eq('id', user.id).single()
-      .then(({ data }) => { if (data) setProfile(data as UserProfile); });
+      .then(({ data, error }) => {
+        if (data) setProfile(data as UserProfile);
+        else if (error) Alert.alert('Error al cargar perfil', error.message);
+      });
   }, [user]);
 
   const initial = user?.email?.[0].toUpperCase() ?? '?';
