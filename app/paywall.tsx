@@ -1,32 +1,42 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   Alert, ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 import Purchases, { PurchasesPackage } from 'react-native-purchases';
+import { RC_CONFIGURED, ENTITLEMENT_ID } from '@/lib/revenuecat';
+import { DEV_PREMIUM_KEY } from '@/hooks/useSubscription';
 import { useTheme } from '@/components/ui/ThemeContext';
 import { Button } from '@/components/ui/Button';
 import { typography, radius } from '@/components/ui/theme';
 
-const FEATURES = [
-  { emoji: '🤖', title: 'Sema Coach IA', detail: 'Orientación personalizada 24/7 sobre tu GLP-1', colorKey: 'primary' as const },
-  { emoji: '💡', title: 'Perspectivas inteligentes', detail: 'Descubre tus patrones: agua, síntomas, energía', colorKey: 'sage' as const },
-  { emoji: '📊', title: 'Tendencias avanzadas', detail: 'Gráficos detallados de las últimas 4 semanas', colorKey: 'lavender' as const },
-  { emoji: '🔔', title: 'Recordatorios personalizados', detail: 'Alertas de hidratación y registro diario', colorKey: null },
+const FEATURE_KEYS = [
+  { key: 'coach',     emoji: '🤖', colorKey: 'primary' as const },
+  { key: 'insights',  emoji: '💡', colorKey: 'sage' as const },
+  { key: 'trends',    emoji: '📊', colorKey: 'lavender' as const },
+  { key: 'reminders', emoji: '🔔', colorKey: null },
 ];
 
 export default function PaywallScreen() {
   const { colors, isDark } = useTheme();
+  const { t } = useTranslation();
+  // Hard paywall por defecto; ?dismissable=1 solo cuando se abre desde Profile.
+  const { dismissable } = useLocalSearchParams<{ dismissable?: string }>();
+  const canClose = dismissable === '1';
+
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string>('annual');
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
 
   useEffect(() => {
+    if (!RC_CONFIGURED) { setLoading(false); return; }
     Purchases.getOfferings()
       .then(o => {
         const pkgs = o.current?.availablePackages ?? [];
@@ -34,41 +44,53 @@ export default function PaywallScreen() {
         setSelected(pkgs.find(p => p.packageType === 'ANNUAL')?.identifier ?? pkgs[0]?.identifier ?? 'annual');
         setLoading(false);
       })
-      .catch(() => { setSelected('annual'); setLoading(false); });
+      .catch(() => setLoading(false));
   }, []);
 
+  const selectedPkg = packages.find(p => p.identifier === selected);
+  const annualSelected = selectedPkg ? selectedPkg.packageType === 'ANNUAL' : selected === 'annual';
+
+  function unlock() {
+    router.replace('/(tabs)/track');
+  }
+
   async function handlePurchase() {
-    const pkg = packages.find(p => p.identifier === selected);
+    const pkg = selectedPkg;
     if (!pkg) {
-      Alert.alert('Próximamente', 'Las compras estarán disponibles en la versión final de la app.');
+      Alert.alert(t('paywall.unavailableTitle'), t('paywall.unavailableBody'));
       return;
     }
     setPurchasing(true);
     try {
-      await Purchases.purchasePackage(pkg);
-      Alert.alert('🎉 ¡Bienvenida a Premium!', 'Ahora tienes acceso completo a Oztrack.');
-      router.back();
+      const { customerInfo } = await Purchases.purchasePackage(pkg);
+      if (customerInfo.entitlements.active[ENTITLEMENT_ID]) {
+        unlock();
+      }
     } catch (e: any) {
-      if (!e.userCancelled) Alert.alert('Error', e.message);
+      if (!e.userCancelled) Alert.alert(t('common.error'), e.message);
     } finally { setPurchasing(false); }
   }
 
   async function handleRestore() {
-    if (!packages.length) {
-      Alert.alert('No disponible', 'Restaurar compras estará disponible en la versión final.');
+    if (!RC_CONFIGURED) {
+      Alert.alert(t('paywall.unavailableTitle'), t('paywall.unavailableBody'));
       return;
     }
     setPurchasing(true);
     try {
       const info = await Purchases.restorePurchases();
-      if (Object.keys(info.entitlements.active).length > 0) {
-        Alert.alert('✅ Compras restauradas');
-        router.back();
+      if (info.entitlements.active[ENTITLEMENT_ID]) {
+        unlock();
       } else {
-        Alert.alert('Sin compras activas', 'No encontramos compras anteriores asociadas a tu cuenta.');
+        Alert.alert(t('paywall.noRestoreTitle'), t('paywall.noRestoreBody'));
       }
-    } catch (e: any) { Alert.alert('Error', e.message); }
+    } catch (e: any) { Alert.alert(t('common.error'), e.message); }
     finally { setPurchasing(false); }
+  }
+
+  async function handleDevContinue() {
+    await AsyncStorage.setItem(DEV_PREMIUM_KEY, 'true');
+    unlock();
   }
 
   const heroColors = isDark
@@ -83,44 +105,52 @@ export default function PaywallScreen() {
 
         {/* Hero */}
         <LinearGradient colors={heroColors as [string, string, ...string[]]} style={styles.heroSection}>
-          <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
-            <View style={[styles.closeCircle, { backgroundColor: colors.surface + 'CC' }]}>
-              <Ionicons name="close" size={20} color={colors.text.secondary} />
-            </View>
-          </TouchableOpacity>
+          {canClose && (
+            <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
+              <View style={[styles.closeCircle, { backgroundColor: colors.surface + 'CC' }]}>
+                <Ionicons name="close" size={20} color={colors.text.secondary} />
+              </View>
+            </TouchableOpacity>
+          )}
 
           <LinearGradient colors={colors.gradients.button as [string, string, ...string[]]} style={[styles.heroIcon, colors.shadow.lg as any]}>
             <Text style={styles.heroEmoji}>✨</Text>
           </LinearGradient>
-          <Text style={[styles.heroTitle, { color: colors.text.primary }]}>Oztrack Premium</Text>
-          <Text style={[styles.heroSubtitle, { color: colors.text.secondary }]}>
-            Todo lo que necesitas para tu camino GLP-1
-          </Text>
-          <View style={[styles.trialBanner, { backgroundColor: colors.primaryPale }]}>
-            <Ionicons name="gift-outline" size={16} color={colors.primary} />
-            <Text style={[styles.trialText, { color: colors.primary }]}>Pruébala 7 días sin límites · Sin compromisos</Text>
-          </View>
+          <Text style={[styles.heroTitle, { color: colors.text.primary }]}>{t('paywall.title')}</Text>
+          <Text style={[styles.heroSubtitle, { color: colors.text.secondary }]}>{t('paywall.subtitle')}</Text>
+          {annualSelected && (
+            <View style={[styles.trialBanner, { backgroundColor: colors.primaryPale }]}>
+              <Ionicons name="gift-outline" size={16} color={colors.primary} />
+              <Text style={[styles.trialText, { color: colors.primary }]}>{t('paywall.trialBanner')}</Text>
+            </View>
+          )}
         </LinearGradient>
 
         <View style={styles.content}>
 
           {/* Features */}
           <View style={styles.featuresList}>
-            {FEATURES.map(f => {
+            {FEATURE_KEYS.map(f => {
               const color = f.colorKey ? colors[f.colorKey] : accentOrange;
               return (
-                <View key={f.title} style={[styles.featureRow, { backgroundColor: colors.surface }, colors.shadow.sm as any]}>
+                <View key={f.key} style={[styles.featureRow, { backgroundColor: colors.surface }, colors.shadow.sm as any]}>
                   <View style={[styles.featureIcon, { backgroundColor: color + '18' }]}>
                     <Text style={styles.featureEmoji}>{f.emoji}</Text>
                   </View>
                   <View style={styles.featureText}>
-                    <Text style={[styles.featureTitle, { color: colors.text.primary }]}>{f.title}</Text>
-                    <Text style={[styles.featureDetail, { color: colors.text.secondary }]}>{f.detail}</Text>
+                    <Text style={[styles.featureTitle, { color: colors.text.primary }]}>{t(`paywall.features.${f.key}.title`)}</Text>
+                    <Text style={[styles.featureDetail, { color: colors.text.secondary }]}>{t(`paywall.features.${f.key}.detail`)}</Text>
                   </View>
                   <Ionicons name="checkmark-circle" size={20} color={color} />
                 </View>
               );
             })}
+          </View>
+
+          {/* Social proof (placeholder hasta tener reviews reales) */}
+          <View style={[styles.socialProof, { backgroundColor: colors.surface }, colors.shadow.sm as any]}>
+            <Text style={styles.socialStars}>★★★★★</Text>
+            <Text style={[styles.socialText, { color: colors.text.secondary }]}>{t('paywall.socialProof')}</Text>
           </View>
 
           {/* Planes */}
@@ -135,11 +165,11 @@ export default function PaywallScreen() {
                     return (
                       <PlanCard
                         key={pkg.identifier}
-                        label={isAnnual ? 'Anual' : 'Mensual'}
-                        price={pkg.product.priceString}
-                        note={isAnnual ? '≈ $5/mes' : undefined}
+                        label={isAnnual ? t('paywall.annual') : t('paywall.monthly')}
+                        price={pkg.product.priceString + (isAnnual ? t('paywall.perYear') : t('paywall.perMonth'))}
+                        note={isAnnual ? t('paywall.annualNote') : undefined}
+                        badge={isAnnual ? t('paywall.annualBadge') : undefined}
                         active={active}
-                        best={isAnnual}
                         onPress={() => setSelected(pkg.identifier)}
                         colors={colors}
                       />
@@ -149,32 +179,38 @@ export default function PaywallScreen() {
               )
               : (
                 <View style={styles.plans}>
-                  <PlanCard label="Anual" price="$59.99/año" note="≈ $5/mes" active={selected === 'annual'} best onPress={() => setSelected('annual')} colors={colors} />
-                  <PlanCard label="Mensual" price="$9.99/mes" active={selected === 'monthly'} onPress={() => setSelected('monthly')} colors={colors} />
+                  <PlanCard label={t('paywall.annual')} price={'$59.99' + t('paywall.perYear')} note={t('paywall.annualNote')} badge={t('paywall.annualBadge')} active={selected === 'annual'} onPress={() => setSelected('annual')} colors={colors} />
+                  <PlanCard label={t('paywall.monthly')} price={'$9.99' + t('paywall.perMonth')} active={selected === 'monthly'} onPress={() => setSelected('monthly')} colors={colors} />
                 </View>
               )
           }
 
           {/* CTA */}
           <Button
-            title={purchasing ? 'Procesando...' : 'Iniciar prueba gratuita de 7 días'}
+            title={purchasing
+              ? t('common.loading')
+              : annualSelected ? t('paywall.ctaTrial') : t('paywall.ctaMonthly')}
             onPress={handlePurchase}
             loading={purchasing}
           />
 
           <TouchableOpacity onPress={handleRestore} style={styles.restoreBtn}>
-            <Text style={[styles.restoreText, { color: colors.text.muted }]}>Restaurar compras anteriores</Text>
+            <Text style={[styles.restoreText, { color: colors.text.muted }]}>{t('paywall.restore')}</Text>
           </TouchableOpacity>
 
-          {/* Legal */}
+          {__DEV__ && !RC_CONFIGURED && (
+            <Button title="Continue (dev — RC sin configurar)" onPress={handleDevContinue} variant="ghost" size="sm" />
+          )}
+
+          {/* Legal: renovación automática (requisito de tienda) */}
           <View style={styles.legalRow}>
-            <Text style={[styles.legalBase, { color: colors.text.muted }]}>Cancela cuando quieras · Renovación automática{'\n'}</Text>
+            <Text style={[styles.legalBase, { color: colors.text.muted }]}>{t('paywall.autoRenew')}{'\n'}</Text>
             <TouchableOpacity onPress={() => router.push('/legal/terms')}>
-              <Text style={[styles.legalLink, { color: colors.text.muted }]}>Términos</Text>
+              <Text style={[styles.legalLink, { color: colors.text.muted }]}>{t('paywall.terms')}</Text>
             </TouchableOpacity>
             <Text style={[styles.legalBase, { color: colors.text.muted }]}> · </Text>
             <TouchableOpacity onPress={() => router.push('/legal/privacy')}>
-              <Text style={[styles.legalLink, { color: colors.text.muted }]}>Privacidad</Text>
+              <Text style={[styles.legalLink, { color: colors.text.muted }]}>{t('paywall.privacy')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -184,15 +220,15 @@ export default function PaywallScreen() {
   );
 }
 
-function PlanCard({ label, price, note, active, best, onPress, colors }: {
-  label: string; price: string; note?: string;
-  active: boolean; best?: boolean; onPress: () => void; colors: any;
+function PlanCard({ label, price, note, badge, active, onPress, colors }: {
+  label: string; price: string; note?: string; badge?: string;
+  active: boolean; onPress: () => void; colors: any;
 }) {
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
-      {best && (
+      {badge && (
         <LinearGradient colors={[colors.success, '#4EA88A']} style={styles.savingsBadge}>
-          <Text style={styles.savingsText}>MEJOR VALOR · AHORRA 50%</Text>
+          <Text style={styles.savingsText}>{badge}</Text>
         </LinearGradient>
       )}
       <LinearGradient
@@ -200,7 +236,7 @@ function PlanCard({ label, price, note, active, best, onPress, colors }: {
         style={[
           styles.planCard,
           { borderColor: active ? colors.primary : colors.border },
-          best && styles.planAnnual,
+          !!badge && styles.planAnnual,
         ]}
       >
         <View style={{ flex: 1 }}>
@@ -222,7 +258,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24, borderBottomLeftRadius: 40, borderBottomRightRadius: 40,
     position: 'relative',
   },
-  closeBtn: { position: 'absolute', top: 16, right: 20 },
+  closeBtn: { position: 'absolute', top: 16, right: 20, zIndex: 1 },
   closeCircle: {
     width: 36, height: 36, borderRadius: 18,
     alignItems: 'center', justifyContent: 'center',
@@ -252,6 +288,12 @@ const styles = StyleSheet.create({
   featureText: { flex: 1 },
   featureTitle: { ...typography.h4, marginBottom: 2 },
   featureDetail: { ...typography.small },
+
+  socialProof: {
+    borderRadius: radius.xl, padding: 14, alignItems: 'center', gap: 4,
+  },
+  socialStars: { fontSize: 16, color: '#F5B942', letterSpacing: 2 },
+  socialText: { ...typography.small, textAlign: 'center' },
 
   plans: { gap: 12 },
   savingsBadge: {

@@ -1,28 +1,35 @@
 import { useEffect, useState } from 'react';
-import { checkSubscription } from '@/lib/revenuecat';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { checkSubscription, RC_CONFIGURED } from '@/lib/revenuecat';
 
-const RC_IOS_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY ?? '';
-const RC_ANDROID_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY ?? '';
-const RC_CONFIGURED = RC_IOS_KEY !== 'REPLACE_ME' && RC_IOS_KEY !== '' &&
-                      RC_ANDROID_KEY !== 'REPLACE_ME' && RC_ANDROID_KEY !== '';
+// Solo en __DEV__: el paywall permite marcar este flag para navegar la app
+// sin RevenueCat configurado. En producción nunca se lee.
+export const DEV_PREMIUM_KEY = 'oztrack_dev_premium';
+
+async function evaluate(): Promise<boolean> {
+  if (__DEV__) {
+    const dev = await AsyncStorage.getItem(DEV_PREMIUM_KEY);
+    if (dev === 'true') return true;
+  }
+  if (!RC_CONFIGURED) return false;
+  return checkSubscription();
+}
 
 export function useSubscription() {
-  const [isPremium, setIsPremium] = useState(!RC_CONFIGURED);
-  const [loading, setLoading] = useState(RC_CONFIGURED);
+  const [isPremium, setIsPremium] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!RC_CONFIGURED) return;
-    checkSubscription().then(active => {
-      setIsPremium(active);
+    evaluate().then(v => {
+      setIsPremium(v);
       setLoading(false);
     });
   }, []);
 
   const refresh = async () => {
-    if (!RC_CONFIGURED) return;
     setLoading(true);
-    const active = await checkSubscription();
-    setIsPremium(active);
+    const v = await evaluate();
+    setIsPremium(v);
     setLoading(false);
   };
 

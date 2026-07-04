@@ -203,7 +203,7 @@ export default function ProfileScreen() {
           {/* Suscripción */}
           <Card style={styles.card}>
             <Text style={[styles.sectionLabel, { color: colors.text.muted }]}>SUSCRIPCIÓN</Text>
-            <TouchableOpacity style={styles.menuRow} onPress={() => router.push('/paywall')} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.menuRow} onPress={() => router.push('/paywall?dismissable=1')} activeOpacity={0.7}>
               <LinearGradient colors={isPremium ? colors.gradients.premium : [colors.border, colors.borderLight]} style={styles.menuIconBox}>
                 <Ionicons name={isPremium ? 'star' : 'star-outline'} size={18} color={isPremium ? '#fff' : colors.text.muted} />
               </LinearGradient>
