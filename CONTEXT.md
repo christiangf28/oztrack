@@ -1,9 +1,10 @@
-# Sematrack — Session Log & Project Context
+# Oztrack — Session Log & Project Context
 
 ## App Overview
-GLP-1 medication companion app (Ozempic, Wegovy, Mounjaro, etc.)
-**Target:** People managing weight loss or diabetes on GLP-1s
-**Monetization:** Freemium — tracking free, AI coach + insights behind paywall
+GLP-1 medication companion app (Ozempic, Wegovy, Mounjaro, Zepbound, Saxenda, Trulicity, compounded, etc.)
+**Target:** People managing weight loss or diabetes on GLP-1s — mercado global en inglés, lanzamiento **Android/Play Store first**
+**Monetization:** HARD PAYWALL (decidido 2026-07-04, basado en RevenueCat State of Subscription Apps 2026) — sin suscripción no hay acceso. Monthly $9.99 / Annual $59.99 preseleccionado con trial de 7 días solo en anual.
+**Flujo:** welcome → quiz pre-auth (7 pasos) → value screen → registro → paywall bloqueante → app
 
 ---
 
@@ -18,12 +19,10 @@ GLP-1 medication companion app (Ozempic, Wegovy, Mounjaro, etc.)
 | Charts | Victory Native |
 | i18n | i18next + react-i18next + expo-localization |
 
-## Pricing Strategy
-- 7-day free trial (no credit card via RevenueCat)
+## Pricing Strategy (actualizado 2026-07-04 — hard paywall)
 - Monthly: $9.99/mo
-- Annual: $59.99/yr (~50% savings — key conversion lever)
-- Free tier: symptom tracking, water, weight log
-- Paid tier: AI Coach + Insights + trend analysis
+- Annual: $59.99/yr (~50% savings, preseleccionado, trial 7 días SOLO en anual)
+- No hay free tier: sin suscripción activa la app redirige al paywall (app/index.tsx)
 
 ---
 
@@ -65,6 +64,16 @@ GLP-1 medication companion app (Ozempic, Wegovy, Mounjaro, etc.)
 ---
 
 ## Session History
+
+### Session actual — 2026-07-04 (Fase 1: Monetización)
+Ver CHANGELOG.md para el detalle. Resumen:
+- [x] Auditoría Fase 0 completa (deuda crítica identificada: API key Anthropic en cliente, copy ES hardcodeado, bypass premium, delete_user RPC faltante)
+- [x] Quiz pre-auth + pantalla struggles + value screen (i18n EN/ES)
+- [x] Hard paywall (trial solo anual, restore, auto-renew terms, dev bypass solo __DEV__)
+- [x] RevenueCat: init al arrancar + logIn al registrarse (keys Android aún placeholder)
+- [x] Medicamentos ampliados a 10 (semaglutida, tirzepatida, liraglutida, dulaglutida, compuestos)
+- [ ] SIGUIENTE: productos en Play Console + RC dashboard, migración struggles en Supabase, Fase 2 (copy EN, Edge Function proxy, estados vacíos)
+- Decisión: lanzamiento Android-first (Play Store); closed testing 12 testers/14 días — arrancar build interno apenas haya keys RC
 
 ### Session 1 — 2026-05-24
 **Goal:** Project bootstrap + diseño visual completo
