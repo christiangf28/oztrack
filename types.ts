@@ -1,5 +1,10 @@
-export type Medication = 'ozempic' | 'wegovy' | 'mounjaro' | 'zepbound' | 'rybelsus' | 'other';
+export type Medication =
+  | 'ozempic' | 'wegovy' | 'mounjaro' | 'zepbound' | 'rybelsus'
+  | 'saxenda' | 'victoza' | 'trulicity' | 'compounded' | 'other';
 export type Goal = 'weight_loss' | 'diabetes' | 'other';
+export type Struggle =
+  | 'side_effects' | 'food_noise' | 'consistency'
+  | 'plateaus' | 'motivation' | 'injection_days';
 export type Gender = 'female' | 'male' | 'prefer_not';
 
 export interface ChatMessage {
@@ -33,6 +38,7 @@ export interface UserProfile {
   start_date: string;
   goals: string;
   symptoms: string[];
+  struggles?: string[];
   gender?: Gender;
   age_range?: string;
   created_at?: string;

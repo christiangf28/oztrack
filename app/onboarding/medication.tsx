@@ -2,38 +2,43 @@ import { useState } from 'react';
 import { ScrollView, TouchableOpacity, Text, View, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { OnboardingLayout } from '@/components/ui/OnboardingLayout';
 import { Button } from '@/components/ui/Button';
 import { useTheme } from '@/components/ui/ThemeContext';
 import { radius, typography } from '@/components/ui/theme';
+import { quizData } from '@/lib/quiz';
 import { Medication } from '@/types';
 
-const MEDICATIONS: { id: Medication; label: string; detail: string; emoji: string }[] = [
-  { id: 'ozempic', label: 'Ozempic', detail: 'Semaglutida · Novo Nordisk', emoji: '💉' },
-  { id: 'wegovy', label: 'Wegovy', detail: 'Semaglutida · Novo Nordisk', emoji: '💉' },
-  { id: 'mounjaro', label: 'Mounjaro', detail: 'Tirzepatida · Eli Lilly', emoji: '💉' },
-  { id: 'zepbound', label: 'Zepbound', detail: 'Tirzepatida · Eli Lilly', emoji: '💉' },
-  { id: 'rybelsus', label: 'Rybelsus', detail: 'Semaglutida oral · Novo Nordisk', emoji: '💊' },
-  { id: 'other', label: 'Otro medicamento', detail: 'No aparece en la lista', emoji: '🌿' },
+const MEDICATIONS: { id: Medication; label: string; detailKey: string; emoji: string }[] = [
+  { id: 'ozempic',    label: 'Ozempic',   detailKey: 'semaglutide',     emoji: '💉' },
+  { id: 'wegovy',     label: 'Wegovy',    detailKey: 'semaglutide',     emoji: '💉' },
+  { id: 'mounjaro',   label: 'Mounjaro',  detailKey: 'tirzepatide',     emoji: '💉' },
+  { id: 'zepbound',   label: 'Zepbound',  detailKey: 'tirzepatide',     emoji: '💉' },
+  { id: 'rybelsus',   label: 'Rybelsus',  detailKey: 'oralSemaglutide', emoji: '💊' },
+  { id: 'saxenda',    label: 'Saxenda',   detailKey: 'liraglutide',     emoji: '💉' },
+  { id: 'victoza',    label: 'Victoza',   detailKey: 'liraglutide',     emoji: '💉' },
+  { id: 'trulicity',  label: 'Trulicity', detailKey: 'dulaglutide',     emoji: '💉' },
+  { id: 'compounded', label: '', detailKey: 'compoundedDetail', emoji: '🧪' },
+  { id: 'other',      label: '', detailKey: 'otherDetail',      emoji: '🌿' },
 ];
-
-export let onboardingData: Record<string, any> = {};
 
 export default function MedicationScreen() {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [selected, setSelected] = useState<Medication | null>(null);
 
   return (
     <OnboardingLayout
-      step={1} totalSteps={5}
+      step={1} totalSteps={6}
       emoji="💊"
-      title="¿Qué medicamento tomas?"
-      subtitle="Esto nos ayuda a personalizar tu experiencia"
+      title={t('onboarding.medication.title')}
+      subtitle={t('onboarding.medication.subtitle')}
       showBack={false}
       footer={
         <Button
-          title="Continuar"
-          onPress={() => { onboardingData.medication = selected; router.push('/onboarding/demographics'); }}
+          title={t('common.continue')}
+          onPress={() => { quizData.medication = selected; router.push('/onboarding/demographics'); }}
           disabled={!selected}
         />
       }
@@ -42,6 +47,7 @@ export default function MedicationScreen() {
         <View style={styles.list}>
           {MEDICATIONS.map(med => {
             const active = selected === med.id;
+            const label = med.label || t(`onboarding.medication.meds.${med.id}`);
             return (
               <TouchableOpacity
                 key={med.id}
@@ -61,8 +67,8 @@ export default function MedicationScreen() {
                   <Text style={styles.emoji}>{med.emoji}</Text>
                 </View>
                 <View style={styles.cardText}>
-                  <Text style={[styles.medName, { color: active ? colors.primary : colors.text.primary }]}>{med.label}</Text>
-                  <Text style={[styles.medDetail, { color: colors.text.muted }]}>{med.detail}</Text>
+                  <Text style={[styles.medName, { color: active ? colors.primary : colors.text.primary }]}>{label}</Text>
+                  <Text style={[styles.medDetail, { color: colors.text.muted }]}>{t(`onboarding.medication.meds.${med.detailKey}`)}</Text>
                 </View>
                 {active && <Ionicons name="checkmark-circle" size={22} color={colors.primary} />}
               </TouchableOpacity>
