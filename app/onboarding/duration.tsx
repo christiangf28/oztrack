@@ -5,7 +5,7 @@ import { OnboardingLayout } from '@/components/ui/OnboardingLayout';
 import { Button } from '@/components/ui/Button';
 import { colors } from '@/components/ui/colors';
 import { radius, typography } from '@/components/ui/theme';
-import { onboardingData } from './medication';
+import { quizData } from '@/lib/quiz';
 
 const DURATIONS = [
   { id: '0', label: 'Acabo de empezar', detail: 'Menos de 1 mes', emoji: '🌱' },
@@ -20,14 +20,14 @@ export default function DurationScreen() {
 
   return (
     <OnboardingLayout
-      step={3} totalSteps={5}
+      step={3} totalSteps={6}
       emoji="📅"
       title="¿Cuánto tiempo llevas?"
       subtitle="Nos ayuda a entender mejor tu experiencia"
       footer={
         <Button
           title="Continuar"
-          onPress={() => { onboardingData.duration = selected; router.push('/onboarding/goals'); }}
+          onPress={() => { quizData.duration = selected; router.push('/onboarding/goals'); }}
           disabled={!selected}
         />
       }

@@ -5,7 +5,7 @@ import { OnboardingLayout } from '@/components/ui/OnboardingLayout';
 import { Button } from '@/components/ui/Button';
 import { useTheme } from '@/components/ui/ThemeContext';
 import { radius, typography } from '@/components/ui/theme';
-import { onboardingData } from './medication';
+import { quizData } from '@/lib/quiz';
 import { Gender } from '@/types';
 
 const GENDERS: { id: Gender; emoji: string; label: string }[] = [
@@ -22,14 +22,14 @@ export default function DemographicsScreen() {
   const [ageRange, setAgeRange] = useState<string | null>(null);
 
   function handleNext() {
-    onboardingData.gender = gender;
-    onboardingData.ageRange = ageRange;
+    quizData.gender = gender;
+    quizData.ageRange = ageRange;
     router.push('/onboarding/duration');
   }
 
   return (
     <OnboardingLayout
-      step={2} totalSteps={5}
+      step={2} totalSteps={6}
       emoji="👤"
       title="Cuéntanos sobre ti"
       subtitle="Nos ayuda a personalizar tu experiencia"

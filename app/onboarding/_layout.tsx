@@ -9,6 +9,8 @@ export default function OnboardingLayout() {
       <Stack.Screen name="duration" />
       <Stack.Screen name="goals" />
       <Stack.Screen name="symptoms" />
+      <Stack.Screen name="struggles" />
+      <Stack.Screen name="value" />
     </Stack>
   );
 }

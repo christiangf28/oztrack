@@ -6,8 +6,7 @@ import { OnboardingLayout } from '@/components/ui/OnboardingLayout';
 import { Button } from '@/components/ui/Button';
 import { useTheme } from '@/components/ui/ThemeContext';
 import { radius, typography } from '@/components/ui/theme';
-import { supabase } from '@/lib/supabase';
-import { onboardingData } from './medication';
+import { quizData, persistQuiz } from '@/lib/quiz';
 
 const SYMPTOMS = [
   { id: 'nausea',       emoji: '🤢', label: 'Náuseas' },
@@ -50,9 +49,6 @@ export default function SymptomsScreen() {
 
   async function handleFinish() {
     setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setLoading(false); return; }
-
     const finalSymptoms = noneSelected
       ? ['none']
       : [
@@ -60,19 +56,10 @@ export default function SymptomsScreen() {
           ...(otherText.trim() ? [`other:${otherText.trim()}`] : []),
         ];
 
-    await supabase.from('users').upsert({
-      id: user.id,
-      email: user.email,
-      medication: onboardingData.medication,
-      start_date: new Date().toISOString(),
-      goals: onboardingData.goals,
-      symptoms: finalSymptoms,
-      gender: onboardingData.gender ?? null,
-      age_range: onboardingData.ageRange ?? null,
-    });
-
+    quizData.symptoms = finalSymptoms;
+    await persistQuiz();
     setLoading(false);
-    router.replace('/(tabs)/track');
+    router.push('/onboarding/struggles');
   }
 
   const hasSelection = noneSelected || selected.length > 0 || otherText.trim().length > 0;
@@ -80,14 +67,14 @@ export default function SymptomsScreen() {
 
   return (
     <OnboardingLayout
-      step={5} totalSteps={5}
+      step={5} totalSteps={6}
       emoji="🌸"
       title="¿Qué síntomas experimentas?"
       subtitle="Opcional · Selecciona todos los que apliquen"
       footer={
         <View style={{ gap: 10 }}>
           <Button
-            title={loading ? 'Guardando...' : '¡Empezar mi seguimiento!'}
+            title={loading ? 'Guardando...' : 'Continuar'}
             onPress={handleFinish}
             loading={loading}
           />

@@ -6,7 +6,7 @@ import { OnboardingLayout } from '@/components/ui/OnboardingLayout';
 import { Button } from '@/components/ui/Button';
 import { useTheme } from '@/components/ui/ThemeContext';
 import { radius, typography } from '@/components/ui/theme';
-import { onboardingData } from './medication';
+import { quizData } from '@/lib/quiz';
 import { Goal } from '@/types';
 
 const GOALS: {
@@ -42,14 +42,14 @@ export default function GoalsScreen() {
 
   return (
     <OnboardingLayout
-      step={4} totalSteps={5}
+      step={4} totalSteps={6}
       emoji="🎯"
       title="¿Cuál es tu objetivo?"
       subtitle="Personalizamos tu experiencia en función de tu meta"
       footer={
         <Button
           title="Continuar"
-          onPress={() => { onboardingData.goals = selected; router.push('/onboarding/symptoms'); }}
+          onPress={() => { quizData.goals = selected; router.push('/onboarding/symptoms'); }}
           disabled={!selected}
         />
       }

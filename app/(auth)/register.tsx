@@ -8,6 +8,8 @@ import { Link, router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
+import { loadQuiz, saveProfileFromQuiz } from '@/lib/quiz';
+import { logInRevenueCat } from '@/lib/revenuecat';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useTheme } from '@/components/ui/ThemeContext';
@@ -27,10 +29,26 @@ export default function RegisterScreen() {
     if (password.length < 8) { setError('La contraseña debe tener al menos 8 caracteres'); return; }
     setLoading(true);
     setError('');
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) {
+      setLoading(false);
+      setError(error.message);
+      return;
+    }
+    const user = data.user;
+    if (user) {
+      // Vincula el usuario con RevenueCat y vuelca el quiz al perfil.
+      await logInRevenueCat(user.id);
+      const quizComplete = await loadQuiz();
+      if (quizComplete) {
+        await saveProfileFromQuiz(user.id, email);
+        setLoading(false);
+        router.replace('/paywall');
+        return;
+      }
+    }
     setLoading(false);
-    if (error) setError(error.message);
-    else router.replace('/onboarding/disclaimer');
+    router.replace('/onboarding/disclaimer');
   }
 
   return (
@@ -69,7 +87,7 @@ export default function RegisterScreen() {
           {/* Formulario */}
           <View style={styles.form}>
             <Text style={[styles.formTitle, { color: colors.text.primary }]}>Crea tu cuenta</Text>
-            <Text style={[styles.formSubtitle, { color: colors.text.secondary }]}>Gratis · Sin tarjeta de crédito</Text>
+            <Text style={[styles.formSubtitle, { color: colors.text.secondary }]}>Guarda tu plan personalizado</Text>
 
             {error ? (
               <View style={[styles.errorBanner, { backgroundColor: colors.errorPale }]}>

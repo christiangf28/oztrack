@@ -131,7 +131,7 @@ export default function WelcomeScreen() {
       flatListRef.current?.scrollToIndex({ index: activeIndex + 1, animated: true });
     } else {
       await markShown();
-      router.replace('/(auth)/register');
+      router.replace('/onboarding/disclaimer');
     }
   }
 

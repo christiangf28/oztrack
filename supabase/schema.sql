@@ -12,6 +12,7 @@ create table public.users (
   start_date timestamptz not null default now(),
   goals text not null,
   symptoms text[] default '{}',
+  struggles text[] default '{}',  -- onboarding quiz: side_effects | food_noise | consistency | plateaus | motivation | injection_days
   gender text,        -- 'female' | 'male' | 'prefer_not'
   age_range text,     -- '18-25' | '26-35' | '36-45' | '46-55' | '55+'
   created_at timestamptz not null default now()
