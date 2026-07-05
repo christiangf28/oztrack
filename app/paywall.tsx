@@ -211,14 +211,16 @@ export default function PaywallScreen() {
 
           {/* Legal: renovación automática (requisito de tienda) */}
           <View style={styles.legalRow}>
-            <Text style={[styles.legalBase, { color: colors.text.muted }]}>{t('paywall.autoRenew')}{'\n'}</Text>
-            <TouchableOpacity onPress={() => router.push('/legal/terms')}>
-              <Text style={[styles.legalLink, { color: colors.text.muted }]}>{t('paywall.terms')}</Text>
-            </TouchableOpacity>
-            <Text style={[styles.legalBase, { color: colors.text.muted }]}> · </Text>
-            <TouchableOpacity onPress={() => router.push('/legal/privacy')}>
-              <Text style={[styles.legalLink, { color: colors.text.muted }]}>{t('paywall.privacy')}</Text>
-            </TouchableOpacity>
+            <Text style={[styles.legalBase, { color: colors.text.muted }]}>{t('paywall.autoRenew')}</Text>
+            <View style={styles.legalLinksRow}>
+              <TouchableOpacity onPress={() => router.push('/legal/terms')}>
+                <Text style={[styles.legalLink, { color: colors.text.muted }]}>{t('paywall.terms')}</Text>
+              </TouchableOpacity>
+              <Text style={[styles.legalBase, { color: colors.text.muted }]}> · </Text>
+              <TouchableOpacity onPress={() => router.push('/legal/privacy')}>
+                <Text style={[styles.legalLink, { color: colors.text.muted }]}>{t('paywall.privacy')}</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
         </View>
@@ -324,7 +326,8 @@ const styles = StyleSheet.create({
 
   restoreBtn: { alignItems: 'center', marginTop: -8 },
   restoreText: { fontSize: 13, textDecorationLine: 'underline' },
-  legalRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' },
+  legalRow: { flexDirection: 'column', justifyContent: 'center', alignItems: 'center' },
+  legalLinksRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
   legalBase: { ...typography.caption, textAlign: 'center', lineHeight: 20 },
   legalLink: { ...typography.caption, textDecorationLine: 'underline', lineHeight: 20 },
 });
