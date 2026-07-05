@@ -32,9 +32,9 @@ export default function LoginScreen() {
     else router.replace('/');
   }
 
-  async function handleGoogle() {
-    await supabase.auth.signInWithOAuth({ provider: 'google' });
-  }
+  // Google OAuth removido para v1: signInWithOAuth necesita expo-auth-session
+  // + deep-linking (scheme semmly://) + OAuth client en Google Cloud. El botón
+  // no funcionaba en Android. Reintroducir post-lanzamiento con el flujo completo.
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
@@ -107,21 +107,6 @@ export default function LoginScreen() {
                 Auth). Un botón sin acción es peor que no tenerlo. */}
 
             <Button title={t('auth.signIn')} onPress={handleLogin} loading={loading} />
-
-            <View style={styles.divider}>
-              <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-              <Text style={[styles.dividerText, { color: colors.text.muted }]}>{t('auth.orContinueWith')}</Text>
-              <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-            </View>
-
-            <TouchableOpacity
-              style={[styles.googleBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
-              onPress={handleGoogle}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.googleIcon}>G</Text>
-              <Text style={[styles.googleText, { color: colors.text.primary }]}>{t('auth.google')}</Text>
-            </TouchableOpacity>
           </View>
 
           {/* Footer */}
@@ -185,21 +170,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   warnText: { fontSize: 12, color: '#92400E', flex: 1, lineHeight: 18 },
-
-  forgotBtn: { alignSelf: 'flex-end', marginTop: -8, marginBottom: 20 },
-  forgotText: { fontSize: 13, fontWeight: '500' },
-
-  divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 20 },
-  dividerLine: { flex: 1, height: 1 },
-  dividerText: { fontSize: 12, marginHorizontal: 14 },
-
-  googleBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    height: 54, borderRadius: radius.full, gap: 10,
-    borderWidth: 1.5,
-  },
-  googleIcon: { fontSize: 18, fontWeight: '800', color: '#4285F4' },
-  googleText: { fontSize: 15, fontWeight: '600' },
 
   footer: { flexDirection: 'row', justifyContent: 'center', paddingBottom: 32, paddingTop: 8 },
   footerText: { fontSize: 14 },
