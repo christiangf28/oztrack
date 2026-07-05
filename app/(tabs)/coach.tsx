@@ -67,7 +67,7 @@ export default function CoachScreen() {
               {
                 user_id: user.id,
                 role: 'assistant',
-                content: '¡Hola! Soy Milli 🌸 Estoy aquí para acompañarte en tu experiencia con GLP-1. Puedo ayudarte con dudas sobre síntomas, efectos secundarios, alimentación y hábitos saludables.',
+                content: '¡Hola! Soy Semmly 🌸 Estoy aquí para acompañarte en tu experiencia con GLP-1. Puedo ayudarte con dudas sobre síntomas, efectos secundarios, alimentación y hábitos saludables.',
               },
               {
                 user_id: user.id,
@@ -141,7 +141,7 @@ export default function CoachScreen() {
           <View style={[styles.onlineDot, { backgroundColor: colors.success, borderColor: colors.surface }]} />
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.coachName, { color: colors.text.primary }]}>Milli</Text>
+          <Text style={[styles.coachName, { color: colors.text.primary }]}>Semmly</Text>
           <Text style={[styles.coachStatus, { color: colors.text.muted }]}>Online · Siempre disponible</Text>
         </View>
         <View style={[styles.premiumPill, { backgroundColor: colors.lavender }]}>
@@ -242,7 +242,7 @@ function WelcomeMessage({ onSuggest }: { onSuggest: (text: string) => void }) {
   return (
     <View style={styles.welcome}>
       <Text style={styles.welcomeEmoji}>🌸</Text>
-      <Text style={[styles.welcomeTitle, { color: colors.text.primary }]}>¡Hola! Soy Milli</Text>
+      <Text style={[styles.welcomeTitle, { color: colors.text.primary }]}>¡Hola! Soy Semmly</Text>
       <Text style={[styles.welcomeText, { color: colors.text.secondary }]}>
         Puedo ayudarte con información educativa sobre tu medicación GLP-1, síntomas y hábitos saludables.
         {'\n\n'}¿Sobre qué te gustaría hablar hoy?
@@ -274,7 +274,7 @@ function PaywallPrompt() {
         start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
       >
         <Text style={styles.paywallEmoji}>✨</Text>
-        <Text style={[styles.paywallTitle, { color: colors.text.primary }]}>Milli</Text>
+        <Text style={[styles.paywallTitle, { color: colors.text.primary }]}>Semmly</Text>
         <Text style={[styles.paywallDesc, { color: colors.text.secondary }]}>
           Tu coach personal de IA, disponible 24/7, especializado en medicamentos GLP-1
         </Text>

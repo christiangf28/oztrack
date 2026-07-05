@@ -78,7 +78,7 @@ export default function RegisterScreen() {
                 <Text style={styles.logoEmoji}>💊</Text>
               </View>
               <View>
-                <Text style={styles.appName}>milli</Text>
+                <Text style={styles.appName}>semmly</Text>
                 <Text style={styles.tagline}>Tu compañera GLP-1</Text>
               </View>
             </View>

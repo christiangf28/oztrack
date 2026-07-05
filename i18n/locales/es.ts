@@ -1,6 +1,6 @@
 export default {
   auth: {
-    welcome: 'Bienvenido a Milli',
+    welcome: 'Bienvenido a Semmly',
     tagline: 'Tu compañero GLP-1',
     login: 'Iniciar Sesión',
     register: 'Crear Cuenta',
@@ -17,7 +17,7 @@ export default {
   onboarding: {
     disclaimer: {
       title: 'Aviso Médico',
-      body: 'Milli es una herramienta informativa únicamente. No proporciona consejo médico, diagnóstico ni tratamiento. Siempre consulta a tu médico antes de realizar cambios en tu medicación o plan de tratamiento.\n\nEsta app no almacena ni transmite datos clínicos como dosis, resultados de laboratorio o recetas.',
+      body: 'Semmly es una herramienta informativa únicamente. No proporciona consejo médico, diagnóstico ni tratamiento. Siempre consulta a tu médico antes de realizar cambios en tu medicación o plan de tratamiento.\n\nEsta app no almacena ni transmite datos clínicos como dosis, resultados de laboratorio o recetas.',
       accept: 'Entiendo y Acepto',
     },
     medication: {
@@ -129,7 +129,7 @@ export default {
     signOut: 'Cerrar Sesión',
   },
   paywall: {
-    title: 'Desbloquea Milli',
+    title: 'Desbloquea Semmly',
     subtitle: 'Todo lo que necesitas para tu viaje GLP-1',
     trialBanner: '7 días de prueba gratis con el plan anual',
     features: {

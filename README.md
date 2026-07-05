@@ -1,4 +1,4 @@
-# Milli — GLP-1 Medication Companion App
+# Semmly — GLP-1 Medication Companion App
 
 Mobile app for people managing weight loss or diabetes on GLP-1 medications (Ozempic, Wegovy, Mounjaro, Zepbound).
 
@@ -25,8 +25,8 @@ Mobile app for people managing weight loss or diabetes on GLP-1 medications (Oze
 ## Getting Started
 
 ```bash
-git clone https://github.com/christiangf28/milli.git
-cd milli
+git clone https://github.com/christiangf28/semmly.git
+cd semmly
 npm install
 npx expo start
 ```

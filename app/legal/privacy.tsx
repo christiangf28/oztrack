@@ -18,19 +18,19 @@ export default function PrivacyScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={[styles.updated, { color: colors.text.muted }]}>Última actualización: mayo 2026</Text>
         <Section title="Qué recopilamos" colors={colors}>
-          Milli recopila tu correo electrónico y datos de salud autoinformados: puntuaciones de síntomas, peso (opcional), ingesta de agua y notas de comidas. NO recopilamos datos clínicos como dosis de medicación, resultados de laboratorio o recetas.
+          Semmly recopila tu correo electrónico y datos de salud autoinformados: puntuaciones de síntomas, peso (opcional), ingesta de agua y notas de comidas. NO recopilamos datos clínicos como dosis de medicación, resultados de laboratorio o recetas.
         </Section>
         <Section title="Cómo usamos tus datos" colors={colors}>
-          Tus datos se usan exclusivamente para proveer el servicio de Milli, incluyendo el análisis de tendencias de síntomas y el coaching de IA. No vendemos tus datos a terceros.
+          Tus datos se usan exclusivamente para proveer el servicio de Semmly, incluyendo el análisis de tendencias de síntomas y el coaching de IA. No vendemos tus datos a terceros.
         </Section>
         <Section title="Coach IA" colors={colors}>
           Los mensajes enviados al Coach de IA son procesados por la API Claude de Anthropic. Los mensajes se guardan en nuestra base de datos para mantener el historial de conversación. No usamos tus mensajes para entrenar modelos de IA.
         </Section>
         <Section title="Retención de datos" colors={colors}>
-          Puedes eliminar tu cuenta y todos los datos asociados en cualquier momento desde la sección Perfil → "Eliminar mi cuenta y datos". Los datos se eliminan de forma permanente e inmediata. También puedes contactarnos en privacy@getmilli.app.
+          Puedes eliminar tu cuenta y todos los datos asociados en cualquier momento desde la sección Perfil → "Eliminar mi cuenta y datos". Los datos se eliminan de forma permanente e inmediata. También puedes contactarnos en privacy@getsemmly.app.
         </Section>
         <Section title="Contacto" colors={colors}>
-          Para consultas de privacidad, contacta: privacy@getmilli.app
+          Para consultas de privacidad, contacta: privacy@getsemmly.app
         </Section>
       </ScrollView>
     </SafeAreaView>

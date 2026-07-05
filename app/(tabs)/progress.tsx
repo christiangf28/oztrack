@@ -303,13 +303,13 @@ export default function ProgressScreen() {
   async function shareProgress() {
     const emoji = streak >= 14 ? '🏆' : streak >= 7 ? '🔥' : streak >= 3 ? '⚡' : '🌱';
     const lines = [
-      `${emoji} Mi progreso en Milli`,
+      `${emoji} Mi progreso en Semmly`,
       '',
       `🔥 Racha actual: ${streak} día${streak !== 1 ? 's' : ''} consecutivo${streak !== 1 ? 's' : ''}`,
       `📝 Total registros: ${logs.length}`,
     ];
     if (avgMood) lines.push(`😊 Ánimo promedio (7d): ${avgMood}/5`);
-    lines.push('', '¡Siguiendo mi journey GLP-1 con Milli! 💪');
+    lines.push('', '¡Siguiendo mi journey GLP-1 con Semmly! 💪');
     try { await Share.share({ message: lines.join('\n') }); } catch {}
   }
 

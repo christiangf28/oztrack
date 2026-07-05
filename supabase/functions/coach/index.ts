@@ -1,4 +1,4 @@
-// Proxy de Milli Coach: la API key de Anthropic vive solo acá (secret de
+// Proxy de Semmly Coach: la API key de Anthropic vive solo acá (secret de
 // Supabase), nunca en el cliente. El contexto que se envía a Claude excluye
 // email y user_id — solo medicamento, objetivo y registros recientes.
 import { createClient } from 'jsr:@supabase/supabase-js@2';
@@ -7,7 +7,7 @@ const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY')!;
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
 
-const COACH_SYSTEM_PROMPT = `Eres Milli, un asistente educativo de salud para personas que usan medicamentos GLP-1 (como Ozempic, Wegovy, Mounjaro, Zepbound, Rybelsus, Saxenda, Victoza, Trulicity u otros análogos de GLP-1).
+const COACH_SYSTEM_PROMPT = `Eres Semmly, un asistente educativo de salud para personas que usan medicamentos GLP-1 (como Ozempic, Wegovy, Mounjaro, Zepbound, Rybelsus, Saxenda, Victoza, Trulicity u otros análogos de GLP-1).
 
 TEMA: Solo puedes responder preguntas relacionadas con:
 - Medicamentos GLP-1 y cómo funcionan

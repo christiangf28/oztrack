@@ -1,8 +1,18 @@
-# Changelog — Milli
+# Changelog — Semmly
 
 Todas las fechas en formato YYYY-MM-DD. Idioma del changelog: español (comunicación interna); copy de la app: inglés US + español.
 
 ## [Unreleased] — Fase 1: Monetización (hard paywall)
+
+### 2026-07-05 (b) — Rebrand: Milli → Semmly
+
+**Decisión**: "Milli" descartado tras verificar colisiones reales — existe "Milli" (co.genvis.milli) app de wellness/juegos de palabras en ambas tiendas, y más grave, **millihealth.com** es un "AI-powered health coach" casi idéntico en posicionamiento al nuestro. "Wren", "Vela", "Viora", "Lumora", "Syntra", "Aviora" y "Glymo" también descartados por colisión (ver sesión 2026-07-05). **Semmly** elegido: nod a semaglutida, sin colisión exacta verificada.
+
+**Cambiado**
+- Rebrand del nombre visible en 20+ archivos: UI, wordmark, persona del coach, legales, docs, i18n EN/ES, repo GitHub (`christiangf28/semmly`).
+- **Importante**: `app.json` mantiene intencionalmente `package`/`bundleIdentifier` = `com.getmilli.app` — la app en Play Console ya estaba creada con ese identificador y todo el formulario de contenido (clasificación IARC, datos de usuario, público objetivo) ya completado bajo ese package. Cambiarlo habría obligado a crear una app nueva en Play Console desde cero. Solo cambia el nombre visible ("Semmly"); el package interno es invisible al usuario.
+- Pendiente manual: cambiar "Nombre de la app" en Play Console (Store presence → Main store listing) de "Milli" a "Semmly"; renombrar el proyecto en RevenueCat (cosmético).
+- Splash screen y feature graphic tienen el wordmark "milli" horneado en la imagen — pendiente regenerar con Gemini usando el prompt de splash/feature graphic pero con "semmly".
 
 ### 2026-07-05 — API key fuera del cliente + Sentry
 
@@ -18,12 +28,12 @@ Todas las fechas en formato YYYY-MM-DD. Idioma del changelog: español (comunica
 
 ### 2026-07-04 (b) — Rebrand: Oztrack → Milli
 
-**Decisión**: "Oztrack" descartado por riesgo de trademark (evoca Ozempic®, Novo Nordisk es litigiosa); "Plume" descartado (Plume Clinic, telehealth USA). **Milli** elegido: guiño a los miligramos, sin colisiones en salud/wellness (verificado 2026-07-04).
+**Decisión**: "Oztrack" descartado por riesgo de trademark (evoca Ozempic®, Novo Nordisk es litigiosa); "Plume" descartado (Plume Clinic, telehealth USA). **Milli** elegido en ese momento: guiño a los miligramos (nombre descartado un día después, ver entrada 2026-07-05 (b) más arriba).
 
 **Cambiado**
 - Rebrand completo en 20+ archivos: nombre visible, wordmark en auth, persona del coach ("Oz Coach" → "Milli"), legales, docs, i18n EN/ES.
-- `app.json`: name "Milli", scheme "milli", package/bundleId `com.getmilli.app` (definir dominio: getmilli.app o milli.health — comprar antes de publicar). El `slug` sigue siendo "oztrack" para no romper el vínculo con el proyecto EAS.
-- Emails de contacto → `support@getmilli.app` / `privacy@getmilli.app` (crear cuando haya dominio).
+- `app.json`: name "Milli", scheme "milli", package/bundleId `com.getmilli.app` (este package se mantuvo en el rename posterior a Semmly). El `slug` sigue siendo "oztrack" para no romper el vínculo con el proyecto EAS.
+- Emails de contacto → `support@getmilli.app` / `privacy@getmilli.app`.
 - Claves internas de AsyncStorage (`oztrack_*`) se mantienen a propósito (invisibles al usuario).
 
 **Añadido**
