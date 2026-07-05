@@ -6,9 +6,11 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, useTheme } from '@/components/ui/ThemeContext';
 import { initRevenueCat } from '@/lib/revenuecat';
+import { initSentry, Sentry } from '@/lib/sentry';
 import '@/i18n';
 
 SplashScreen.preventAutoHideAsync();
+initSentry();
 
 function AppRoot() {
   const { isDark } = useTheme();
@@ -26,7 +28,7 @@ function AppRoot() {
   );
 }
 
-export default function RootLayout() {
+function RootLayout() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
@@ -35,3 +37,5 @@ export default function RootLayout() {
     </SafeAreaProvider>
   );
 }
+
+export default Sentry.wrap(RootLayout);

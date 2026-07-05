@@ -9,7 +9,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { anthropic, COACH_SYSTEM_PROMPT } from '@/lib/anthropic';
+import { askCoach, CoachDailyLimitError } from '@/lib/anthropic';
+import { Sentry } from '@/lib/sentry';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -89,22 +90,8 @@ export default function CoachScreen() {
     setThinking(true);
 
     try {
-      const [{ data: logs }, { data: profile }] = await Promise.all([
-        supabase.from('daily_logs').select('*').eq('user_id', user.id).order('date', { ascending: false }).limit(7),
-        supabase.from('users').select('*').eq('id', user.id).single(),
-      ]);
-      const ctx = `Medicamento: ${profile?.medication ?? 'desconocido'}, Objetivo: ${profile?.goals ?? 'no especificado'}, Últimos registros: ${JSON.stringify(logs?.slice(0, 3) ?? [])}`;
-
       const history = [...messages, userMsg].map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
-      const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1024,
-        system: `${COACH_SYSTEM_PROMPT}\n\n${ctx}`,
-        messages: history,
-      });
-
-      const first = response.content?.[0];
-      const replyContent = first?.type === 'text' ? stripMarkdown(first.text) : '';
+      const replyContent = stripMarkdown(await askCoach(history));
       const assistantMsg: ChatMessage = { user_id: user.id, role: 'assistant', content: replyContent };
       setMessages(prev => [...prev, assistantMsg]);
 
@@ -112,11 +99,15 @@ export default function CoachScreen() {
         { ...userMsg, created_at: new Date().toISOString() },
         { ...assistantMsg, created_at: new Date().toISOString() },
       ]);
-    } catch {
+    } catch (e) {
+      const limitReached = e instanceof CoachDailyLimitError;
+      if (!limitReached) Sentry.captureException(e);
       setMessages(prev => [...prev, {
         user_id: user.id,
         role: 'assistant' as const,
-        content: 'Hubo un error al procesar tu mensaje. Por favor intenta de nuevo.',
+        content: limitReached
+          ? 'Llegaste al límite de mensajes por hoy. Inténtalo de nuevo en unas horas 🌸'
+          : 'Hubo un error al procesar tu mensaje. Por favor intenta de nuevo.',
       }]);
     } finally {
       setThinking(false);

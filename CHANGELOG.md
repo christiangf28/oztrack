@@ -4,6 +4,18 @@ Todas las fechas en formato YYYY-MM-DD. Idioma del changelog: español (comunica
 
 ## [Unreleased] — Fase 1: Monetización (hard paywall)
 
+### 2026-07-05 — API key fuera del cliente + Sentry
+
+**Seguridad (crítico, cerrado)**
+- La API key de Anthropic ya NO viaja en el cliente. Se movió a `supabase/functions/coach/index.ts`, una Edge Function que hace de proxy: recibe el JWT del usuario, arma el contexto (medicamento/objetivo/últimos registros vía RLS, sin email ni user_id) y llama a Claude con la key como secret de Supabase.
+- Límite anti-abuso server-side: 30 mensajes/24h por usuario (ventana móvil), pensado para el closed testing con testers desconocidos — evita que un loop de cliente o un mal uso queme el crédito de la API. Historial enviado a Claude capado a los últimos 20 mensajes.
+- `lib/anthropic.ts` reescrito: expone `askCoach(messages)` que llama a la función vía `supabase.functions.invoke`; se eliminó `@anthropic-ai/sdk` del cliente (dependencia removida de package.json).
+- `.env`: `EXPO_PUBLIC_ANTHROPIC_API_KEY` eliminado. Pendiente correr `supabase secrets set ANTHROPIC_API_KEY=...` y `supabase functions deploy coach` (bloqueado por login de la CLI, ver pendientes).
+
+**Añadido**
+- Sentry (`@sentry/react-native`) integrado para crash reporting — reemplaza/complementa alertas tipo Discord. Captura automática de errores no manejados + `Sentry.captureException` explícito en fallas del coach y de compras/restore (paywall). Gateado por `EXPO_PUBLIC_SENTRY_DSN` (placeholder en `.env`, pendiente crear cuenta).
+- `tsconfig.json` excluye `supabase/functions` (runtime Deno, no Node/RN).
+
 ### 2026-07-04 (b) — Rebrand: Oztrack → Milli
 
 **Decisión**: "Oztrack" descartado por riesgo de trademark (evoca Ozempic®, Novo Nordisk es litigiosa); "Plume" descartado (Plume Clinic, telehealth USA). **Milli** elegido: guiño a los miligramos, sin colisiones en salud/wellness (verificado 2026-07-04).

@@ -11,6 +11,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import Purchases, { PurchasesPackage } from 'react-native-purchases';
 import { RC_CONFIGURED, ENTITLEMENT_ID } from '@/lib/revenuecat';
+import { Sentry } from '@/lib/sentry';
 import { DEV_PREMIUM_KEY } from '@/hooks/useSubscription';
 import { useTheme } from '@/components/ui/ThemeContext';
 import { Button } from '@/components/ui/Button';
@@ -67,7 +68,10 @@ export default function PaywallScreen() {
         unlock();
       }
     } catch (e: any) {
-      if (!e.userCancelled) Alert.alert(t('common.error'), e.message);
+      if (!e.userCancelled) {
+        Sentry.captureException(e);
+        Alert.alert(t('common.error'), e.message);
+      }
     } finally { setPurchasing(false); }
   }
 
@@ -84,7 +88,10 @@ export default function PaywallScreen() {
       } else {
         Alert.alert(t('paywall.noRestoreTitle'), t('paywall.noRestoreBody'));
       }
-    } catch (e: any) { Alert.alert(t('common.error'), e.message); }
+    } catch (e: any) {
+      Sentry.captureException(e);
+      Alert.alert(t('common.error'), e.message);
+    }
     finally { setPurchasing(false); }
   }
 
