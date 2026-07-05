@@ -58,7 +58,7 @@ export default function LoginScreen() {
             <View style={styles.logoCircle}>
               <Text style={styles.logoEmoji}>💊</Text>
             </View>
-            <Text style={styles.appName}>oztrack</Text>
+            <Text style={styles.appName}>milli</Text>
             <Text style={styles.tagline}>Tu compañera en el camino GLP-1</Text>
             <View style={styles.decor1} />
             <View style={styles.decor2} />

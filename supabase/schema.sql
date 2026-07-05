@@ -1,4 +1,4 @@
--- Oztrack Database Schema
+﻿-- Milli Database Schema
 -- Run in Supabase SQL Editor
 
 -- Enable RLS

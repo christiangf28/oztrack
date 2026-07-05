@@ -1,4 +1,4 @@
-# OzTrack — GLP-1 Medication Companion App
+# Milli — GLP-1 Medication Companion App
 
 Mobile app for people managing weight loss or diabetes on GLP-1 medications (Ozempic, Wegovy, Mounjaro, Zepbound).
 

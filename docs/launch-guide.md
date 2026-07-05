@@ -1,4 +1,4 @@
-# Guía de lanzamiento beta — Oztrack en Google Play
+# Guía de lanzamiento beta — Milli en Google Play
 
 ## FASE 1 — GitHub Pages (Privacy Policy URL)
 
@@ -8,13 +8,13 @@ Google Play exige una URL pública de Política de Privacidad. La tienes lista e
    ```
    git init
    git add .
-   git commit -m "Oztrack v1.0"
-   git remote add origin https://github.com/TU_USUARIO/oztrack.git
+   git commit -m "Milli v1.0"
+   git remote add origin https://github.com/TU_USUARIO/milli.git
    git push -u origin main
    ```
 2. En GitHub → Settings → Pages → Source: "Deploy from branch" → branch: `main` → folder: `/docs`
 3. Tu Privacy Policy quedará en:
-   `https://TU_USUARIO.github.io/oztrack/privacy.html`
+   `https://TU_USUARIO.github.io/milli/privacy.html`
 4. Guarda esa URL — la necesitarás en Google Play Console.
 
 ---
@@ -77,14 +77,14 @@ eas build --platform android --profile production
 - Verificación de identidad (puede tardar 1-2 días)
 
 ### 3.2 Crear la app
-1. "Crear app" → nombre: **Oztrack**
+1. "Crear app" → nombre: **Milli**
 2. Idioma: Español (España) o Español (Latinoamérica)
 3. Tipo: App (no juego)
 4. Gratis / De pago: **Gratis** (con compras integradas)
 
 ### 3.3 Store listing (Ficha de Play Store)
 Rellena con los textos de `docs/google-play-listing.md`:
-- Nombre de la app: `Oztrack — GLP-1 Companion`
+- Nombre de la app: `Milli — GLP-1 Companion`
 - Descripción corta (80 chars)
 - Descripción completa
 - Icono: necesitas el `icon.png` exportado a **512×512 px**

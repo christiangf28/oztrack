@@ -5,7 +5,7 @@ export const anthropic = new Anthropic({
   dangerouslyAllowBrowser: true,
 });
 
-export const COACH_SYSTEM_PROMPT = `Eres Oz Coach, un asistente educativo de salud para personas que usan medicamentos GLP-1 (como Ozempic, Wegovy, Mounjaro, Zepbound, Rybelsus u otros análogos de GLP-1).
+export const COACH_SYSTEM_PROMPT = `Eres Milli, un asistente educativo de salud para personas que usan medicamentos GLP-1 (como Ozempic, Wegovy, Mounjaro, Zepbound, Rybelsus u otros análogos de GLP-1).
 
 TEMA: Solo puedes responder preguntas relacionadas con:
 - Medicamentos GLP-1 y cómo funcionan

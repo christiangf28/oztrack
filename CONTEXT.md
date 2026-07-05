@@ -1,4 +1,4 @@
-# Oztrack — Session Log & Project Context
+# Milli — Session Log & Project Context
 
 ## App Overview
 GLP-1 medication companion app (Ozempic, Wegovy, Mounjaro, Zepbound, Saxenda, Trulicity, compounded, etc.)

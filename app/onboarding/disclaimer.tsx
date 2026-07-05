@@ -40,7 +40,7 @@ export default function DisclaimerScreen() {
           icon="information-circle"
           color={colors.primary}
           title="Solo informativo"
-          text="Oztrack es una herramienta de seguimiento personal. No proporciona consejo médico, diagnóstico ni tratamiento."
+          text="Milli es una herramienta de seguimiento personal. No proporciona consejo médico, diagnóstico ni tratamiento."
           colors={colors}
         />
         <DisclaimerItem

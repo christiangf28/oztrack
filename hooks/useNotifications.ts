@@ -43,7 +43,7 @@ Notifications.setNotificationHandler({
 export async function requestNotifPermission(): Promise<boolean> {
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
-      name: 'Oztrack',
+      name: 'Milli',
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 250, 250, 250],
     });

@@ -80,7 +80,7 @@ export default function ProfileScreen() {
       `${l.date},${l.nausea},${l.fatigue},${l.mood},${l.appetite ?? ''},${l.water_ml},${l.weight ?? ''},${l.bowel_movements ?? ''},"${String(l.meal_notes ?? '').replace(/"/g, '""')}"`
     );
     try {
-      await Share.share({ message: [headers, ...rows].join('\n'), title: 'Oztrack — Mis registros' });
+      await Share.share({ message: [headers, ...rows].join('\n'), title: 'Milli — Mis registros' });
     } catch {}
   }
 
@@ -142,7 +142,7 @@ export default function ProfileScreen() {
                     await AsyncStorage.clear();
                     router.replace('/welcome');
                   } catch {
-                    Alert.alert('Error', 'No se pudo eliminar la cuenta. Escríbenos a privacy@oztrack.app');
+                    Alert.alert('Error', 'No se pudo eliminar la cuenta. Escríbenos a privacy@getmilli.app');
                   }
                 },
               },
@@ -292,7 +292,7 @@ export default function ProfileScreen() {
             <Text style={[styles.deleteText, { color: colors.error }]}>Eliminar mi cuenta y datos</Text>
           </TouchableOpacity>
 
-          <Text style={[styles.version, { color: colors.text.muted }]}>Oztrack v1.0 · hecho con 🌸</Text>
+          <Text style={[styles.version, { color: colors.text.muted }]}>Milli v1.0 · hecho con 🌸</Text>
 
           {/* Links legales */}
           <View style={styles.legalRow}>

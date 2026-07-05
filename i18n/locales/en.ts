@@ -1,7 +1,7 @@
 export default {
   // Auth
   auth: {
-    welcome: 'Welcome to Oztrack',
+    welcome: 'Welcome to Milli',
     tagline: 'Your GLP-1 companion',
     login: 'Log In',
     register: 'Create Account',
@@ -19,7 +19,7 @@ export default {
   onboarding: {
     disclaimer: {
       title: 'Medical Disclaimer',
-      body: 'Oztrack is an informational tool only. It does not provide medical advice, diagnosis, or treatment. Always consult your doctor or healthcare provider before making any changes to your medication or treatment plan.\n\nThis app does not store or transmit clinical data such as dosages, lab results, or prescriptions.',
+      body: 'Milli is an informational tool only. It does not provide medical advice, diagnosis, or treatment. Always consult your doctor or healthcare provider before making any changes to your medication or treatment plan.\n\nThis app does not store or transmit clinical data such as dosages, lab results, or prescriptions.',
       accept: 'I Understand & Accept',
     },
     medication: {
@@ -137,7 +137,7 @@ export default {
   },
   // Paywall
   paywall: {
-    title: 'Unlock Oztrack',
+    title: 'Unlock Milli',
     subtitle: 'Everything you need for your GLP-1 journey',
     trialBanner: '7-day free trial with the annual plan',
     features: {

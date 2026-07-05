@@ -18,13 +18,13 @@ export default function TermsScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={[styles.updated, { color: colors.text.muted }]}>Última actualización: mayo 2026</Text>
         <View style={styles.disclaimer}>
-          <Text style={styles.disclaimerText}>⚠️ Oztrack es una herramienta informativa. No proporciona consejo médico, diagnóstico ni tratamiento. Consulta siempre a un profesional de salud cualificado.</Text>
+          <Text style={styles.disclaimerText}>⚠️ Milli es una herramienta informativa. No proporciona consejo médico, diagnóstico ni tratamiento. Consulta siempre a un profesional de salud cualificado.</Text>
         </View>
-        <Section title="1. Aceptación" colors={colors}>Al usar Oztrack aceptas estos términos. Si no estás de acuerdo, no uses la app.</Section>
-        <Section title="2. No es consejo médico" colors={colors}>Oztrack y su Coach IA proporcionan información educativa únicamente. Nada en la app constituye consejo médico. Nunca ignores el consejo médico profesional basándote en información de esta app.</Section>
+        <Section title="1. Aceptación" colors={colors}>Al usar Milli aceptas estos términos. Si no estás de acuerdo, no uses la app.</Section>
+        <Section title="2. No es consejo médico" colors={colors}>Milli y su Coach IA proporcionan información educativa únicamente. Nada en la app constituye consejo médico. Nunca ignores el consejo médico profesional basándote en información de esta app.</Section>
         <Section title="3. Suscripciones" colors={colors}>Las funciones Premium están disponibles con suscripción mensual ($9.99) o anual ($59.99) con 7 días de prueba gratuita. Las suscripciones se renuevan automáticamente y pueden cancelarse en cualquier momento.</Section>
-        <Section title="4. Uso aceptable" colors={colors}>Aceptas no usar Oztrack para ningún fin ilegal ni intentar revertir la ingeniería o abusar del servicio.</Section>
-        <Section title="5. Contacto" colors={colors}>support@oztrack.app</Section>
+        <Section title="4. Uso aceptable" colors={colors}>Aceptas no usar Milli para ningún fin ilegal ni intentar revertir la ingeniería o abusar del servicio.</Section>
+        <Section title="5. Contacto" colors={colors}>support@getmilli.app</Section>
       </ScrollView>
     </SafeAreaView>
   );

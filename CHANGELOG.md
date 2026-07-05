@@ -1,8 +1,21 @@
-# Changelog — Oztrack
+# Changelog — Milli
 
 Todas las fechas en formato YYYY-MM-DD. Idioma del changelog: español (comunicación interna); copy de la app: inglés US + español.
 
 ## [Unreleased] — Fase 1: Monetización (hard paywall)
+
+### 2026-07-04 (b) — Rebrand: Oztrack → Milli
+
+**Decisión**: "Oztrack" descartado por riesgo de trademark (evoca Ozempic®, Novo Nordisk es litigiosa); "Plume" descartado (Plume Clinic, telehealth USA). **Milli** elegido: guiño a los miligramos, sin colisiones en salud/wellness (verificado 2026-07-04).
+
+**Cambiado**
+- Rebrand completo en 20+ archivos: nombre visible, wordmark en auth, persona del coach ("Oz Coach" → "Milli"), legales, docs, i18n EN/ES.
+- `app.json`: name "Milli", scheme "milli", package/bundleId `com.getmilli.app` (definir dominio: getmilli.app o milli.health — comprar antes de publicar). El `slug` sigue siendo "oztrack" para no romper el vínculo con el proyecto EAS.
+- Emails de contacto → `support@getmilli.app` / `privacy@getmilli.app` (crear cuando haya dominio).
+- Claves internas de AsyncStorage (`oztrack_*`) se mantienen a propósito (invisibles al usuario).
+
+**Añadido**
+- Assets nuevos de marca (generados con Gemini, watermark removido, procesados con Pillow): `icon.png` 1024², `adaptive-icon.png` 1024² (droplet+halo reconstruidos dentro de la zona segura de Android), `splash.png` 1284×2778, `notification-icon.png` 96² (silueta blanca+alpha), `favicon.png`. Feature graphic 1024×500 para Play Console en `Desktop\Oztrack\feature-graphic-1024x500.png`.
 
 ### 2026-07-04
 

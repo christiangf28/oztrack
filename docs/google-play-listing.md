@@ -1,8 +1,8 @@
-# Google Play Store Listing — Oztrack
+# Google Play Store Listing — Milli
 
 ## Nombre de la app (30 caracteres máx.)
 ```
-Oztrack — GLP-1 Companion
+Milli — GLP-1 Companion
 ```
 
 ## Descripción corta (80 caracteres máx.)
@@ -13,7 +13,7 @@ Seguimiento de síntomas para Ozempic, Wegovy, Mounjaro y más GLP-1
 ## Descripción completa (4000 caracteres máx.)
 
 ```
-¿Estás en tratamiento con un medicamento GLP-1 como Ozempic, Wegovy, Mounjaro o Rybelsus? Oztrack es tu companion app para hacer seguimiento de cómo te sientes cada día y sacar el máximo provecho de tu tratamiento.
+¿Estás en tratamiento con un medicamento GLP-1 como Ozempic, Wegovy, Mounjaro o Rybelsus? Milli es tu companion app para hacer seguimiento de cómo te sientes cada día y sacar el máximo provecho de tu tratamiento.
 
 🌸 SEGUIMIENTO DIARIO SIN ESFUERZO
 Registra en segundos cómo te encuentras: náuseas, fatiga, estado de ánimo y apetito con sliders intuitivos. También puedes anotar tu ingesta de agua y peso corporal (opcional).
@@ -35,13 +35,13 @@ Interfaz cuidada en modo claro y oscuro. Elige el que prefieras o déjalo en aut
 
 ---
 
-IMPORTANTE: Oztrack es una herramienta de seguimiento personal. No proporciona diagnóstico médico, consejo clínico ni recomendaciones de dosis. Consulta siempre a tu médico o profesional de salud.
+IMPORTANTE: Milli es una herramienta de seguimiento personal. No proporciona diagnóstico médico, consejo clínico ni recomendaciones de dosis. Consulta siempre a tu médico o profesional de salud.
 
 ---
 
 ✨ PLANES
 • Gratis: registro diario, historial, progreso básico
-• Premium (7 días gratis): Oz Coach IA + gráficos avanzados + logros
+• Premium (7 días gratis): Milli IA + gráficos avanzados + logros
   – Mensual: $9.99/mes
   – Anual: $59.99/año (ahorra 50%)
 ```
@@ -69,7 +69,7 @@ IMPORTANTE: Oztrack es una herramienta de seguimiento personal. No proporciona d
 ## URL de Política de Privacidad (OBLIGATORIA)
 Una vez que tengas GitHub Pages activo:
 ```
-https://TU_USUARIO.github.io/oztrack/privacy.html
+https://TU_USUARIO.github.io/milli/privacy.html
 ```
 
 ---
@@ -85,7 +85,7 @@ https://TU_USUARIO.github.io/oztrack/privacy.html
 
 ## Checklist Google Play Console
 - [ ] Crear cuenta de desarrollador ($25 pago único)
-- [ ] Crear nueva app → "Oztrack"
+- [ ] Crear nueva app → "Milli"
 - [ ] Rellenar Store listing con textos de arriba
 - [ ] Subir icono 512×512 y screenshots
 - [ ] Completar cuestionario de calificación de contenido
