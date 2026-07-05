@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTranslation } from 'react-i18next';
 import { OnboardingLayout } from '@/components/ui/OnboardingLayout';
 import { Button } from '@/components/ui/Button';
 import { useTheme } from '@/components/ui/ThemeContext';
@@ -9,46 +10,47 @@ import { radius, typography } from '@/components/ui/theme';
 import { quizData } from '@/lib/quiz';
 import { Goal } from '@/types';
 
-const GOALS: {
-  id: Goal; emoji: string; label: string; detail: string;
-  gradient: [string, string]; accentColor: 'primary' | 'sage' | 'lavender';
-}[] = [
-  {
-    id: 'weight_loss', emoji: '⚖️',
-    label: 'Control de Peso',
-    detail: 'Seguimiento de progreso y hábitos saludables',
-    gradient: ['#FDE8ED', '#F5C6D3'],
-    accentColor: 'primary',
-  },
-  {
-    id: 'diabetes', emoji: '🩺',
-    label: 'Control de Diabetes',
-    detail: 'Monitoreo de bienestar y síntomas diarios',
-    gradient: ['#EDF4F1', '#D5EAE3'],
-    accentColor: 'sage',
-  },
-  {
-    id: 'other', emoji: '🌿',
-    label: 'Salud General',
-    detail: 'Bienestar y seguimiento personalizado',
-    gradient: ['#F2EFF9', '#E5DFF5'],
-    accentColor: 'lavender',
-  },
-];
-
 export default function GoalsScreen() {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [selected, setSelected] = useState<Goal | null>(null);
+
+  const GOALS: {
+    id: Goal; emoji: string; label: string; detail: string;
+    gradient: [string, string]; accentColor: 'primary' | 'sage' | 'lavender';
+  }[] = [
+    {
+      id: 'weight_loss', emoji: '⚖️',
+      label: t('onboarding.goals.weightLoss'),
+      detail: t('onboarding.goals.weightLossDetail'),
+      gradient: ['#FDE8ED', '#F5C6D3'],
+      accentColor: 'primary',
+    },
+    {
+      id: 'diabetes', emoji: '🩺',
+      label: t('onboarding.goals.diabetes'),
+      detail: t('onboarding.goals.diabetesDetail'),
+      gradient: ['#EDF4F1', '#D5EAE3'],
+      accentColor: 'sage',
+    },
+    {
+      id: 'other', emoji: '🌿',
+      label: t('onboarding.goals.other'),
+      detail: t('onboarding.goals.otherDetail'),
+      gradient: ['#F2EFF9', '#E5DFF5'],
+      accentColor: 'lavender',
+    },
+  ];
 
   return (
     <OnboardingLayout
       step={4} totalSteps={6}
       emoji="🎯"
-      title="¿Cuál es tu objetivo?"
-      subtitle="Personalizamos tu experiencia en función de tu meta"
+      title={t('onboarding.goals.title')}
+      subtitle={t('onboarding.goals.subtitle')}
       footer={
         <Button
-          title="Continuar"
+          title={t('common.continue')}
           onPress={() => { quizData.goals = selected; router.push('/onboarding/symptoms'); }}
           disabled={!selected}
         />

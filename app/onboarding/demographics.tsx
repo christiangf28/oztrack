@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { OnboardingLayout } from '@/components/ui/OnboardingLayout';
 import { Button } from '@/components/ui/Button';
 import { useTheme } from '@/components/ui/ThemeContext';
@@ -8,18 +9,19 @@ import { radius, typography } from '@/components/ui/theme';
 import { quizData } from '@/lib/quiz';
 import { Gender } from '@/types';
 
-const GENDERS: { id: Gender; emoji: string; label: string }[] = [
-  { id: 'female',      emoji: '🙋‍♀️', label: 'Mujer' },
-  { id: 'male',        emoji: '🙋‍♂️', label: 'Hombre' },
-  { id: 'prefer_not',  emoji: '🤷',   label: 'Prefiero no decir' },
-];
-
 const AGE_RANGES = ['18–25', '26–35', '36–45', '46–55', '55+'];
 
 export default function DemographicsScreen() {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [gender, setGender] = useState<Gender | null>(null);
   const [ageRange, setAgeRange] = useState<string | null>(null);
+
+  const GENDERS: { id: Gender; emoji: string; label: string }[] = [
+    { id: 'female',     emoji: '🙋‍♀️', label: t('onboarding.demographics.female') },
+    { id: 'male',       emoji: '🙋‍♂️', label: t('onboarding.demographics.male') },
+    { id: 'prefer_not', emoji: '🤷',   label: t('onboarding.demographics.preferNot') },
+  ];
 
   function handleNext() {
     quizData.gender = gender;
@@ -31,17 +33,17 @@ export default function DemographicsScreen() {
     <OnboardingLayout
       step={2} totalSteps={6}
       emoji="👤"
-      title="Cuéntanos sobre ti"
-      subtitle="Nos ayuda a personalizar tu experiencia"
+      title={t('onboarding.demographics.title')}
+      subtitle={t('onboarding.demographics.subtitle')}
       footer={
         <View style={{ gap: 10 }}>
-          <Button title="Continuar" onPress={handleNext} disabled={!gender} />
-          <Button title="Omitir" onPress={handleNext} variant="ghost" size="sm" />
+          <Button title={t('common.continue')} onPress={handleNext} disabled={!gender} />
+          <Button title={t('onboarding.demographics.skip')} onPress={handleNext} variant="ghost" size="sm" />
         </View>
       }
     >
       {/* Género */}
-      <Text style={[styles.sectionLabel, { color: colors.text.muted }]}>GÉNERO</Text>
+      <Text style={[styles.sectionLabel, { color: colors.text.muted }]}>{t('onboarding.demographics.genderLabel')}</Text>
       <View style={styles.genderRow}>
         {GENDERS.map(g => {
           const active = gender === g.id;
@@ -67,7 +69,7 @@ export default function DemographicsScreen() {
       </View>
 
       {/* Rango de edad */}
-      <Text style={[styles.sectionLabel, { color: colors.text.muted, marginTop: 28 }]}>EDAD</Text>
+      <Text style={[styles.sectionLabel, { color: colors.text.muted, marginTop: 28 }]}>{t('onboarding.demographics.ageLabel')}</Text>
       <View style={styles.ageGrid}>
         {AGE_RANGES.map(range => {
           const active = ageRange === range;

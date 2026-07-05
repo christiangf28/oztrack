@@ -2,28 +2,30 @@ import { useState } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { OnboardingLayout } from '@/components/ui/OnboardingLayout';
 import { Button } from '@/components/ui/Button';
 import { useTheme } from '@/components/ui/ThemeContext';
 import { radius, typography } from '@/components/ui/theme';
 import { quizData, persistQuiz } from '@/lib/quiz';
 
-const SYMPTOMS = [
-  { id: 'nausea',       emoji: '🤢', label: 'Náuseas' },
-  { id: 'fatigue',      emoji: '😴', label: 'Fatiga' },
-  { id: 'appetite',     emoji: '🍽️', label: 'Cambios de apetito' },
-  { id: 'constipation', emoji: '😣', label: 'Estreñimiento' },
-  { id: 'headaches',    emoji: '🤕', label: 'Dolor de cabeza' },
-  { id: 'dizziness',    emoji: '💫', label: 'Mareos' },
-];
-
 export default function SymptomsScreen() {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [selected, setSelected] = useState<string[]>([]);
   const [noneSelected, setNoneSelected] = useState(false);
   const [otherText, setOtherText] = useState('');
   const [showOtherInput, setShowOtherInput] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const SYMPTOMS = [
+    { id: 'nausea',       emoji: '🤢', label: t('onboarding.symptoms.nausea') },
+    { id: 'fatigue',      emoji: '😴', label: t('onboarding.symptoms.fatigue') },
+    { id: 'appetite',     emoji: '🍽️', label: t('onboarding.symptoms.appetite') },
+    { id: 'constipation', emoji: '😣', label: t('onboarding.symptoms.constipation') },
+    { id: 'headaches',    emoji: '🤕', label: t('onboarding.symptoms.headaches') },
+    { id: 'dizziness',    emoji: '💫', label: t('onboarding.symptoms.dizziness') },
+  ];
 
   function toggleSymptom(id: string) {
     setNoneSelected(false);
@@ -62,23 +64,22 @@ export default function SymptomsScreen() {
     router.push('/onboarding/struggles');
   }
 
-  const hasSelection = noneSelected || selected.length > 0 || otherText.trim().length > 0;
   const count = noneSelected ? 0 : selected.length + (otherText.trim() ? 1 : 0);
 
   return (
     <OnboardingLayout
       step={5} totalSteps={6}
       emoji="🌸"
-      title="¿Qué síntomas experimentas?"
-      subtitle="Opcional · Selecciona todos los que apliquen"
+      title={t('onboarding.symptoms.title')}
+      subtitle={t('onboarding.symptoms.subtitle')}
       footer={
         <View style={{ gap: 10 }}>
           <Button
-            title={loading ? 'Guardando...' : 'Continuar'}
+            title={loading ? t('common.loading') : t('common.continue')}
             onPress={handleFinish}
             loading={loading}
           />
-          <Button title="Omitir por ahora" onPress={handleFinish} variant="ghost" size="sm" />
+          <Button title={t('onboarding.symptoms.skip')} onPress={handleFinish} variant="ghost" size="sm" />
         </View>
       }
     >
@@ -120,7 +121,7 @@ export default function SymptomsScreen() {
           <Text style={styles.chipEmoji}>✏️</Text>
           <Text style={[styles.chipLabel, { color: showOtherInput ? colors.lavender : colors.text.primary },
             showOtherInput && { fontWeight: '600' }]}>
-            Otros
+            {t('onboarding.symptoms.other')}
           </Text>
           {showOtherInput && <View style={[styles.chipDot, { backgroundColor: colors.lavender }]} />}
         </TouchableOpacity>
@@ -138,7 +139,7 @@ export default function SymptomsScreen() {
           <Text style={styles.chipEmoji}>✅</Text>
           <Text style={[styles.chipLabel, { color: noneSelected ? colors.sage : colors.text.primary },
             noneSelected && { fontWeight: '600' }]}>
-            Ninguno
+            {t('onboarding.symptoms.none')}
           </Text>
           {noneSelected && <View style={[styles.chipDot, { backgroundColor: colors.sage }]} />}
         </TouchableOpacity>
@@ -150,7 +151,7 @@ export default function SymptomsScreen() {
           <Ionicons name="create-outline" size={16} color={colors.lavender} />
           <TextInput
             style={[styles.otherTextField, { color: colors.text.primary }]}
-            placeholder="¿Qué otro síntoma tienes?"
+            placeholder={t('onboarding.symptoms.otherPlaceholder')}
             placeholderTextColor={colors.text.muted}
             value={otherText}
             onChangeText={setOtherText}
@@ -161,12 +162,12 @@ export default function SymptomsScreen() {
 
       {count > 0 && (
         <Text style={[styles.hint, { color: colors.text.muted }]}>
-          {count} síntoma{count > 1 ? 's' : ''} seleccionado{count > 1 ? 's' : ''}
+          {t('onboarding.symptoms.selectedHint', { count })}
         </Text>
       )}
       {noneSelected && (
         <Text style={[styles.hint, { color: colors.sage }]}>
-          ¡Genial! Sin síntomas por ahora 🌟
+          {t('onboarding.symptoms.noneHint')}
         </Text>
       )}
     </OnboardingLayout>

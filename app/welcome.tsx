@@ -19,49 +19,51 @@ import Animated, {
   SharedValue,
 } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/components/ui/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
 const WELCOME_SHOWN_KEY = 'oztrack_welcome_shown';
 
-const slides = [
-  {
-    id: '1',
-    emoji: '✨',
-    title: 'Tu cuerpo está cambiando.',
-    subtitle: 'Acompáñalo.',
-    body: 'El seguimiento diario hace la diferencia entre esforzarse y progresar con GLP-1.',
-    gradientKey: 'heroSoft' as const,
-  },
-  {
-    id: '2',
-    emoji: '📊',
-    title: 'Síntomas, peso,\nbienestar.',
-    subtitle: 'Todo en un lugar.',
-    body: 'Registra cómo te sientes cada día y descubre tus patrones semana a semana.',
-    gradientKey: 'sage' as const,
-  },
-  {
-    id: '3',
-    emoji: '🤖',
-    title: 'Tu Coach IA,\nsiempre contigo.',
-    subtitle: 'A cualquier hora.',
-    body: 'Resuelve dudas, ajusta tu rutina y mantente motivada con apoyo personalizado.',
-    gradientKey: 'heroSoft' as const,
-  },
-  {
-    id: '4',
-    emoji: '🌸',
-    title: 'Miles de personas\nya en camino.',
-    subtitle: '¿Te unes?',
-    body: 'Pruébala 7 días sin límites. Sin compromisos. Resultados reales.',
-    gradientKey: 'heroSoft' as const,
-    isCta: true,
-  },
-];
+function useSlides() {
+  const { t } = useTranslation();
+  return [
+    {
+      id: '1', emoji: '✨',
+      title: t('welcomeSlides.slide1Title'),
+      subtitle: t('welcomeSlides.slide1Subtitle'),
+      body: t('welcomeSlides.slide1Body'),
+      gradientKey: 'heroSoft' as const,
+    },
+    {
+      id: '2', emoji: '📊',
+      title: t('welcomeSlides.slide2Title'),
+      subtitle: t('welcomeSlides.slide2Subtitle'),
+      body: t('welcomeSlides.slide2Body'),
+      gradientKey: 'sage' as const,
+    },
+    {
+      id: '3', emoji: '🤖',
+      title: t('welcomeSlides.slide3Title'),
+      subtitle: t('welcomeSlides.slide3Subtitle'),
+      body: t('welcomeSlides.slide3Body'),
+      gradientKey: 'heroSoft' as const,
+    },
+    {
+      id: '4', emoji: '🌸',
+      title: t('welcomeSlides.slide4Title'),
+      subtitle: t('welcomeSlides.slide4Subtitle'),
+      body: t('welcomeSlides.slide4Body'),
+      gradientKey: 'heroSoft' as const,
+      isCta: true,
+    },
+  ];
+}
 
-function Slide({ item, index, scrollX }: { item: typeof slides[0]; index: number; scrollX: SharedValue<number> }) {
+type SlideItem = ReturnType<typeof useSlides>[0];
+
+function Slide({ item, index, scrollX }: { item: SlideItem; index: number; scrollX: SharedValue<number> }) {
   const { colors } = useTheme();
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -112,11 +114,13 @@ function Dots({ count, activeIndex, colors }: { count: number; activeIndex: numb
 }
 
 export default function WelcomeScreen() {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const flatListRef = useRef<FlatList>(null);
   const scrollX = useSharedValue(0);
   const [activeIndex, setActiveIndex] = useState(0);
+  const slides = useSlides();
 
   const onViewableItemsChanged = useCallback(({ viewableItems }: { viewableItems: ViewToken[] }) => {
     if (viewableItems[0]) {
@@ -175,14 +179,14 @@ export default function WelcomeScreen() {
             end={{ x: 1, y: 0 }}
           >
             <Text style={styles.primaryButtonText}>
-              {isLast ? 'Empezar gratis' : 'Siguiente'}
+              {isLast ? t('welcomeSlides.getStartedFree') : t('welcomeSlides.next')}
             </Text>
           </LinearGradient>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={goLogin} style={styles.secondaryButton}>
           <Text style={[styles.secondaryButtonText, { color: colors.text.secondary }]}>
-            Ya tengo cuenta
+            {t('welcomeSlides.alreadyHaveAccount')}
           </Text>
         </TouchableOpacity>
       </View>

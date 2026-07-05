@@ -1,32 +1,34 @@
 import { useState } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { OnboardingLayout } from '@/components/ui/OnboardingLayout';
 import { Button } from '@/components/ui/Button';
 import { colors } from '@/components/ui/colors';
 import { radius, typography } from '@/components/ui/theme';
 import { quizData } from '@/lib/quiz';
 
-const DURATIONS = [
-  { id: '0', label: 'Acabo de empezar', detail: 'Menos de 1 mes', emoji: '🌱' },
-  { id: '1-3', label: '1 a 3 meses', detail: 'Fase de adaptación', emoji: '🌿' },
-  { id: '3-6', label: '3 a 6 meses', detail: 'Encontrando el ritmo', emoji: '🌸' },
-  { id: '6-12', label: '6 a 12 meses', detail: 'Con experiencia', emoji: '🌺' },
-  { id: '12+', label: 'Más de un año', detail: 'Con mucha experiencia', emoji: '⭐' },
-];
-
 export default function DurationScreen() {
+  const { t } = useTranslation();
   const [selected, setSelected] = useState<string | null>(null);
+
+  const DURATIONS = [
+    { id: '0', label: t('onboarding.duration.justStarted'), detail: t('onboarding.duration.justStartedDetail'), emoji: '🌱' },
+    { id: '1-3', label: t('onboarding.duration.oneToThree'), detail: t('onboarding.duration.oneToThreeDetail'), emoji: '🌿' },
+    { id: '3-6', label: t('onboarding.duration.threeToSix'), detail: t('onboarding.duration.threeToSixDetail'), emoji: '🌸' },
+    { id: '6-12', label: t('onboarding.duration.sixToTwelve'), detail: t('onboarding.duration.sixToTwelveDetail'), emoji: '🌺' },
+    { id: '12+', label: t('onboarding.duration.overYear'), detail: t('onboarding.duration.overYearDetail'), emoji: '⭐' },
+  ];
 
   return (
     <OnboardingLayout
       step={3} totalSteps={6}
       emoji="📅"
-      title="¿Cuánto tiempo llevas?"
-      subtitle="Nos ayuda a entender mejor tu experiencia"
+      title={t('onboarding.duration.title')}
+      subtitle={t('onboarding.duration.subtitle')}
       footer={
         <Button
-          title="Continuar"
+          title={t('common.continue')}
           onPress={() => { quizData.duration = selected; router.push('/onboarding/goals'); }}
           disabled={!selected}
         />

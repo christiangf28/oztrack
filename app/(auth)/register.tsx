@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
@@ -16,6 +17,7 @@ import { useTheme } from '@/components/ui/ThemeContext';
 import { typography, radius } from '@/components/ui/theme';
 
 export default function RegisterScreen() {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,9 +26,9 @@ export default function RegisterScreen() {
   const [error, setError] = useState('');
 
   async function handleRegister() {
-    if (!email || !password || !confirm) { setError('Por favor completa todos los campos'); return; }
-    if (password !== confirm) { setError('Las contraseñas no coinciden'); return; }
-    if (password.length < 8) { setError('La contraseña debe tener al menos 8 caracteres'); return; }
+    if (!email || !password || !confirm) { setError(t('auth.fillAllFields')); return; }
+    if (password !== confirm) { setError(t('auth.passwordMismatch')); return; }
+    if (password.length < 8) { setError(t('auth.passwordTooShort')); return; }
     setLoading(true);
     setError('');
     const { data, error } = await supabase.auth.signUp({ email, password });
@@ -78,16 +80,16 @@ export default function RegisterScreen() {
                 <Text style={styles.logoEmoji}>💊</Text>
               </View>
               <View>
-                <Text style={styles.appName}>semmly</Text>
-                <Text style={styles.tagline}>Tu compañera GLP-1</Text>
+                <Text style={styles.appName}>Semmly</Text>
+                <Text style={styles.tagline}>{t('auth.tagline')}</Text>
               </View>
             </View>
           </LinearGradient>
 
           {/* Formulario */}
           <View style={styles.form}>
-            <Text style={[styles.formTitle, { color: colors.text.primary }]}>Crea tu cuenta</Text>
-            <Text style={[styles.formSubtitle, { color: colors.text.secondary }]}>Guarda tu plan personalizado</Text>
+            <Text style={[styles.formTitle, { color: colors.text.primary }]}>{t('auth.registerTitle')}</Text>
+            <Text style={[styles.formSubtitle, { color: colors.text.secondary }]}>{t('auth.registerSubtitle')}</Text>
 
             {error ? (
               <View style={[styles.errorBanner, { backgroundColor: colors.errorPale }]}>
@@ -97,23 +99,23 @@ export default function RegisterScreen() {
             ) : null}
 
             <Input
-              label="Correo electrónico"
+              label={t('auth.email')}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
-              placeholder="tu@correo.com"
+              placeholder={t('auth.emailPlaceholder')}
               icon="mail-outline"
             />
             <Input
-              label="Contraseña"
+              label={t('auth.password')}
               value={password}
               onChangeText={setPassword}
               secureToggle
-              placeholder="mín. 8 caracteres"
+              placeholder={t('auth.passwordPlaceholder')}
               icon="lock-closed-outline"
             />
             <Input
-              label="Confirmar contraseña"
+              label={t('auth.confirmPassword')}
               value={confirm}
               onChangeText={setConfirm}
               secureToggle
@@ -121,14 +123,14 @@ export default function RegisterScreen() {
               icon="shield-checkmark-outline"
             />
 
-            <Button title="Crear cuenta" onPress={handleRegister} loading={loading} />
+            <Button title={t('auth.createAccountBtn')} onPress={handleRegister} loading={loading} />
           </View>
 
           <View style={styles.footer}>
-            <Text style={[styles.footerText, { color: colors.text.secondary }]}>¿Ya tienes cuenta? </Text>
+            <Text style={[styles.footerText, { color: colors.text.secondary }]}>{t('auth.hasAccount')} </Text>
             <Link href="/(auth)/login" asChild>
               <TouchableOpacity>
-                <Text style={[styles.footerLink, { color: colors.primary }]}>Inicia sesión</Text>
+                <Text style={[styles.footerLink, { color: colors.primary }]}>{t('auth.signIn')}</Text>
               </TouchableOpacity>
             </Link>
           </View>

@@ -4,12 +4,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
 import { useTheme } from '@/components/ui/ThemeContext';
 import { typography, radius } from '@/components/ui/theme';
 
 export default function DisclaimerScreen() {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [checked, setChecked] = useState(false);
 
   return (
@@ -26,8 +28,8 @@ export default function DisclaimerScreen() {
             <Ionicons name="shield-checkmark" size={32} color="#fff" />
           </LinearGradient>
         </View>
-        <Text style={[styles.title, { color: colors.text.primary }]}>Aviso Médico</Text>
-        <Text style={[styles.subtitle, { color: colors.text.secondary }]}>Léelo antes de continuar</Text>
+        <Text style={[styles.title, { color: colors.text.primary }]}>{t('onboarding.disclaimer.title')}</Text>
+        <Text style={[styles.subtitle, { color: colors.text.secondary }]}>{t('onboarding.disclaimer.subtitle')}</Text>
       </LinearGradient>
 
       {/* Contenido */}
@@ -39,29 +41,29 @@ export default function DisclaimerScreen() {
         <DisclaimerItem
           icon="information-circle"
           color={colors.primary}
-          title="Solo informativo"
-          text="Semmly es una herramienta de seguimiento personal. No proporciona consejo médico, diagnóstico ni tratamiento."
+          title={t('onboarding.disclaimer.item1Title')}
+          text={t('onboarding.disclaimer.item1Text')}
           colors={colors}
         />
         <DisclaimerItem
           icon="medkit"
           color={colors.sage}
-          title="Consulta a tu médico"
-          text="Siempre consulta a tu profesional de salud antes de realizar cualquier cambio en tu medicación o tratamiento."
+          title={t('onboarding.disclaimer.item2Title')}
+          text={t('onboarding.disclaimer.item2Text')}
           colors={colors}
         />
         <DisclaimerItem
           icon="lock-closed"
           color={colors.lavender}
-          title="Sin datos clínicos"
-          text="No almacenamos ni transmitimos dosis, resultados de laboratorio, recetas ni información clínica."
+          title={t('onboarding.disclaimer.item3Title')}
+          text={t('onboarding.disclaimer.item3Text')}
           colors={colors}
         />
         <DisclaimerItem
           icon="chatbubble-ellipses"
           color="#E8926A"
-          title="IA educativa"
-          text="El Coach de IA ofrece información educativa general basada en guías clínicas. Nunca sugiere cambios de dosis ni diagnósticos."
+          title={t('onboarding.disclaimer.item4Title')}
+          text={t('onboarding.disclaimer.item4Text')}
           colors={colors}
         />
       </ScrollView>
@@ -81,12 +83,12 @@ export default function DisclaimerScreen() {
             {checked && <Ionicons name="checkmark" size={16} color="#fff" />}
           </View>
           <Text style={[styles.checkLabel, { color: colors.text.primary }]}>
-            Entiendo que esta app no reemplaza el consejo médico
+            {t('onboarding.disclaimer.checkLabel')}
           </Text>
         </TouchableOpacity>
 
         <Button
-          title="Entiendo y acepto"
+          title={t('onboarding.disclaimer.accept')}
           onPress={() => router.push('/onboarding/medication')}
           disabled={!checked}
         />

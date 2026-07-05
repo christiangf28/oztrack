@@ -27,15 +27,8 @@ const QUICK_WATER = [
   { label: '+1.5L', ml: 1500 },
 ];
 
-function getGreeting() {
-  const h = new Date().getHours();
-  if (h < 12) return '¡Buenos días';
-  if (h < 18) return '¡Buenas tardes';
-  return '¡Buenas noches';
-}
-
 export default function TrackScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { colors, isDark } = useTheme();
   const [saving, setSaving] = useState(false);
@@ -57,6 +50,13 @@ export default function TrackScreen() {
 
   const gender = useGender();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+
+  function getGreeting() {
+    const h = new Date().getHours();
+    if (h < 12) return t('track.greetingMorning');
+    if (h < 18) return t('track.greetingAfternoon');
+    return t('track.greetingEvening');
+  }
 
   function setScore(key: keyof typeof scores) {
     return (v: number) => setScores(prev => ({ ...prev, [key]: v }));
@@ -102,10 +102,11 @@ export default function TrackScreen() {
 
     setSaving(false);
     if (error) Alert.alert('Error', error.message);
-    else Alert.alert('✅ ¡Registro guardado!', g(gender, 'Sigue así, lo estás haciendo genial 🌸', 'Sigue así, lo estás haciendo muy bien 💪', 'Sigue así, lo estás haciendo genial 🌟'));
+    else Alert.alert(`✅ ${t('track.saved')}`, g(gender, t('track.savedBodyFemale'), t('track.savedBodyMale'), t('track.savedBodyNeutral')));
   }
 
-  const today = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+  const dateLocale = i18n.language.startsWith('es') ? 'es-ES' : 'en-US';
+  const today = new Date().toLocaleDateString(dateLocale, { weekday: 'long', day: 'numeric', month: 'long' });
   const todayCap = today.charAt(0).toUpperCase() + today.slice(1);
   const waterPercent = Math.min(waterTotal / 2000, 1);
 
@@ -126,7 +127,7 @@ export default function TrackScreen() {
               <Text style={[styles.date, { color: colors.text.secondary }]}>{todayCap}</Text>
             </View>
             <View style={[styles.pillBadge, { backgroundColor: colors.primary + '20' }]}>
-              <Text style={[styles.pillBadgeText, { color: colors.primary }]}>💊 Hoy</Text>
+              <Text style={[styles.pillBadgeText, { color: colors.primary }]}>💊 {t('track.todayBadge')}</Text>
             </View>
           </View>
         </LinearGradient>
@@ -135,37 +136,37 @@ export default function TrackScreen() {
 
           {/* Síntomas */}
           <Card style={styles.card}>
-            <Text style={[styles.cardTitle, { color: colors.text.primary }]}>¿Cómo te sientes hoy?</Text>
-            <Text style={[styles.cardSubtitle, { color: colors.text.muted }]}>Toca para seleccionar</Text>
+            <Text style={[styles.cardTitle, { color: colors.text.primary }]}>{t('track.howFeeling')}</Text>
+            <Text style={[styles.cardSubtitle, { color: colors.text.muted }]}>{t('track.tapToSelect')}</Text>
 
             <View style={{ marginTop: 20 }}>
               <ScoreSlider
-                label="Náuseas"
+                label={t('track.nausea')}
                 value={scores.nausea}
                 onChange={setScore('nausea')}
                 color={colors.symptom.nausea}
                 emoji={['😊', '🙂', '😐', '🤢', '🤮']}
-                subtitle="1 = ninguna · 5 = muy fuertes"
+                subtitle={t('track.nauseaScale')}
               />
               <ScoreSlider
-                label="Fatiga"
+                label={t('track.fatigue')}
                 value={scores.fatigue}
                 onChange={setScore('fatigue')}
                 color={colors.symptom.fatigue}
                 emoji={['⚡', '🙂', '😐', '😕', '😴']}
-                subtitle="1 = con energía · 5 = muy cansado/a"
+                subtitle={t('track.fatigueScale')}
               />
 
               {/* Apetito — 3 opciones */}
               <View style={{ marginBottom: 24 }}>
                 <Text style={[styles.cardTitle, { color: colors.text.primary, fontSize: 15, fontWeight: '600', marginBottom: 12 }]}>
-                  Apetito
+                  {t('track.appetite')}
                 </Text>
                 <View style={styles.appetiteRow}>
                   {([
-                    { value: 1, label: 'Poco', emoji: '😔' },
-                    { value: 3, label: 'Normal', emoji: '😊' },
-                    { value: 5, label: 'Mucho', emoji: '🤤' },
+                    { value: 1, label: t('track.appetiteLow'), emoji: '😔' },
+                    { value: 3, label: t('track.appetiteNormal'), emoji: '😊' },
+                    { value: 5, label: t('track.appetiteHigh'), emoji: '🤤' },
                   ] as const).map(opt => {
                     const active = appetite === opt.value;
                     return (
@@ -186,12 +187,12 @@ export default function TrackScreen() {
               </View>
 
               <ScoreSlider
-                label="Estado de ánimo"
+                label={t('track.mood')}
                 value={scores.mood}
                 onChange={setScore('mood')}
                 color={colors.symptom.mood}
                 emoji={['😢', '😕', '😐', '🙂', '😄']}
-                subtitle="1 = muy bajo · 5 = excelente"
+                subtitle={t('track.moodScale')}
               />
             </View>
           </Card>
@@ -199,7 +200,7 @@ export default function TrackScreen() {
           {/* Agua acumulativa */}
           <Card style={styles.card}>
             <View style={styles.waterHeader}>
-              <Text style={[styles.cardTitle, { color: colors.text.primary }]}>💧 Agua bebida</Text>
+              <Text style={[styles.cardTitle, { color: colors.text.primary }]}>💧 {t('track.water')}</Text>
               <Text style={[styles.waterTotal, { color: '#5BA8D0' }]}>{waterLabel(waterTotal)}</Text>
             </View>
 
@@ -207,7 +208,7 @@ export default function TrackScreen() {
             <View style={[styles.waterBar, { backgroundColor: colors.border }]}>
               <View style={[styles.waterBarFill, { width: `${waterPercent * 100}%` }]} />
             </View>
-            <Text style={[styles.waterMeta, { color: colors.text.muted }]}>Meta diaria recomendada: 2L</Text>
+            <Text style={[styles.waterMeta, { color: colors.text.muted }]}>{t('track.waterGoal')}</Text>
 
             {/* Quick add */}
             <View style={styles.waterChips}>
@@ -234,7 +235,7 @@ export default function TrackScreen() {
                 value={waterCustom}
                 onChangeText={setWaterCustom}
                 keyboardType="numeric"
-                placeholder="Cantidad en ml"
+                placeholder={t('track.waterPlaceholder')}
                 placeholderTextColor={colors.text.muted}
                 returnKeyType="done"
                 onSubmitEditing={addCustomWater}
@@ -250,14 +251,14 @@ export default function TrackScreen() {
 
             {waterTotal > 0 && (
               <TouchableOpacity onPress={() => setWaterTotal(0)} style={styles.waterReset}>
-                <Text style={[styles.waterResetText, { color: colors.text.muted }]}>Reiniciar conteo</Text>
+                <Text style={[styles.waterResetText, { color: colors.text.muted }]}>{t('track.waterReset')}</Text>
               </TouchableOpacity>
             )}
           </Card>
 
           {/* Peso */}
           <Card style={styles.card}>
-            <Text style={[styles.cardTitle, { color: colors.text.primary }]}>⚖️ Peso (opcional)</Text>
+            <Text style={[styles.cardTitle, { color: colors.text.primary }]}>⚖️ {t('track.weight')}</Text>
             <View style={styles.weightRow}>
               <TextInput
                 style={[styles.weightInput, {
@@ -268,7 +269,7 @@ export default function TrackScreen() {
                 value={weight}
                 onChangeText={setWeight}
                 keyboardType="decimal-pad"
-                placeholder={weightUnit === 'kg' ? 'ej. 75' : 'ej. 165'}
+                placeholder={weightUnit === 'kg' ? t('track.weightPlaceholderKg') : t('track.weightPlaceholderLb')}
                 placeholderTextColor={colors.text.muted}
               />
               {/* Toggle kg/lb */}
@@ -295,7 +296,7 @@ export default function TrackScreen() {
 
           {/* Notas */}
           <Card style={styles.card}>
-            <Text style={[styles.cardTitle, { color: colors.text.primary }]}>🍽️ Notas de comidas</Text>
+            <Text style={[styles.cardTitle, { color: colors.text.primary }]}>🍽️ {t('track.mealNotes')}</Text>
             <TextInput
               style={[styles.textarea, {
                 borderColor: colors.border,
@@ -306,7 +307,7 @@ export default function TrackScreen() {
               onChangeText={setMealNotes}
               multiline
               numberOfLines={4}
-              placeholder="¿Qué comiste hoy? ¿Algo que afectó tus síntomas?"
+              placeholder={t('track.mealNotesPlaceholder')}
               placeholderTextColor={colors.text.muted}
               textAlignVertical="top"
             />
@@ -316,7 +317,7 @@ export default function TrackScreen() {
           {bowelEnabled && (
             <Card style={styles.card}>
               <View style={styles.bowelHeader}>
-                <Text style={[styles.cardTitle, { color: colors.text.primary }]}>🚽 Tránsito intestinal</Text>
+                <Text style={[styles.cardTitle, { color: colors.text.primary }]}>🚽 {t('track.bowel')}</Text>
                 <Text style={[styles.bowelCount, { color: colors.primary }]}>{bowelCount}x</Text>
               </View>
               <View style={styles.bowelRow}>
@@ -344,8 +345,8 @@ export default function TrackScreen() {
             </Card>
           )}
 
-          <Button title="Guardar registro del día" onPress={handleSave} loading={saving} />
-          <Text style={[styles.saveTip, { color: colors.text.muted }]}>Registrar cada día construye tu racha 🔥</Text>
+          <Button title={t('track.save')} onPress={handleSave} loading={saving} />
+          <Text style={[styles.saveTip, { color: colors.text.muted }]}>{t('track.saveTip')}</Text>
 
         </View>
       </ScrollView>

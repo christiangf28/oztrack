@@ -201,6 +201,10 @@ export default function PaywallScreen() {
             loading={purchasing}
           />
 
+          {annualSelected && (
+            <Text style={[styles.cancelNote, { color: colors.text.secondary }]}>{t('paywall.cancelNote')}</Text>
+          )}
+
           <TouchableOpacity onPress={handleRestore} style={styles.restoreBtn}>
             <Text style={[styles.restoreText, { color: colors.text.muted }]}>{t('paywall.restore')}</Text>
           </TouchableOpacity>
@@ -324,6 +328,7 @@ const styles = StyleSheet.create({
   },
   planRadioDot: { width: 10, height: 10, borderRadius: 5 },
 
+  cancelNote: { fontSize: 12, textAlign: 'center', marginTop: -8 },
   restoreBtn: { alignItems: 'center', marginTop: -8 },
   restoreText: { fontSize: 13, textDecorationLine: 'underline' },
   legalRow: { flexDirection: 'column', justifyContent: 'center', alignItems: 'center' },

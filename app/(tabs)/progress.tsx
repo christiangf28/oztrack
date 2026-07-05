@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import Svg, { Path, Circle, Defs, LinearGradient as SvgGradient, Stop, Line, Text as SvgText } from 'react-native-svg';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
@@ -116,9 +117,9 @@ function avg(arr: number[]): number {
   return Math.round((arr.reduce((s, v) => s + v, 0) / arr.length) * 10) / 10;
 }
 
-function dayLabel(dateStr: string, period: Period): string {
+function dayLabel(dateStr: string, period: Period, locale: string): string {
   const d = new Date(dateStr);
-  if (period <= 7) return d.toLocaleDateString('es-ES', { weekday: 'short' }).slice(0, 2);
+  if (period <= 7) return d.toLocaleDateString(locale, { weekday: 'short' }).slice(0, 2);
   return `${d.getDate()}/${d.getMonth() + 1}`;
 }
 
@@ -149,7 +150,7 @@ function generateInsights(logs: DailyLog[], colors: any) {
 
 // ─── Month Calendar ───────────────────────────────────────────────────────────
 
-function MonthCalendar({ logs, colors }: { logs: DailyLog[]; colors: any }) {
+function MonthCalendar({ logs, colors, locale }: { logs: DailyLog[]; colors: any; locale: string }) {
   const [offset, setOffset] = useState(0);
 
   const today = new Date();
@@ -170,7 +171,8 @@ function MonthCalendar({ logs, colors }: { logs: DailyLog[]; colors: any }) {
     cells.push({ day: d, dateStr, hasLog: logDates.has(dateStr), isToday: dateStr === todayStr });
   }
 
-  const monthLabel = firstDay.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+  const monthLabel = firstDay.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
+  const dow = locale.startsWith('es') ? ['L', 'M', 'X', 'J', 'V', 'S', 'D'] : ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   return (
     <View>
@@ -191,8 +193,8 @@ function MonthCalendar({ logs, colors }: { logs: DailyLog[]; colors: any }) {
       </View>
 
       <View style={styles.calDowRow}>
-        {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map(d => (
-          <Text key={d} style={[styles.calDow, { color: colors.text.muted }]}>{d}</Text>
+        {dow.map((d, i) => (
+          <Text key={i} style={[styles.calDow, { color: colors.text.muted }]}>{d}</Text>
         ))}
       </View>
 
@@ -224,13 +226,14 @@ function MonthCalendar({ logs, colors }: { logs: DailyLog[]; colors: any }) {
 // ─── Achievements Grid ────────────────────────────────────────────────────────
 
 function AchievementsGrid({ logs, colors }: { logs: DailyLog[]; colors: any }) {
+  const { t } = useTranslation();
   const achievements = useMemo(() => computeAchievements(logs), [logs]);
   const unlockedCount = achievements.filter(a => a.unlocked).length;
 
   return (
     <View>
       <Text style={[styles.achieveSubtitle, { color: colors.text.muted }]}>
-        {unlockedCount}/{achievements.length} desbloqueados
+        {t('progress.achievementsUnlocked', { unlocked: unlockedCount, total: achievements.length })}
       </Text>
       <View style={styles.achieveGrid}>
         {achievements.map(a => (
@@ -265,6 +268,8 @@ function AchievementsGrid({ logs, colors }: { logs: DailyLog[]; colors: any }) {
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function ProgressScreen() {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language.startsWith('es') ? 'es-ES' : 'en-US';
   const { user } = useAuth();
   const { isPremium } = useSubscription();
   const { colors, isDark } = useTheme();
@@ -296,20 +301,20 @@ export default function ProgressScreen() {
   const fatigueValues = periodLogs.map(l => l.fatigue);
   const nauseaValues = periodLogs.map(l => l.nausea);
   const weightValues = weightLogs.map(l => l.weight!);
-  const chartLabels = periodLogs.map(l => dayLabel(l.date, period));
+  const chartLabels = periodLogs.map(l => dayLabel(l.date, period, locale));
   const avgMood = avg(moodValues);
   const avgWater = logs.length ? Math.round(avg(logs.slice(0, period).map(l => l.water_ml))) : 0;
 
   async function shareProgress() {
     const emoji = streak >= 14 ? '🏆' : streak >= 7 ? '🔥' : streak >= 3 ? '⚡' : '🌱';
     const lines = [
-      `${emoji} Mi progreso en Semmly`,
+      `${emoji} ${t('progress.shareTitle')}`,
       '',
-      `🔥 Racha actual: ${streak} día${streak !== 1 ? 's' : ''} consecutivo${streak !== 1 ? 's' : ''}`,
-      `📝 Total registros: ${logs.length}`,
+      t('progress.shareStreak', { count: streak }),
+      t('progress.shareLogs', { count: logs.length }),
     ];
-    if (avgMood) lines.push(`😊 Ánimo promedio (7d): ${avgMood}/5`);
-    lines.push('', '¡Siguiendo mi journey GLP-1 con Semmly! 💪');
+    if (avgMood) lines.push(t('progress.shareMood', { value: avgMood }));
+    lines.push('', t('progress.shareFooter'));
     try { await Share.share({ message: lines.join('\n') }); } catch {}
   }
 
@@ -332,9 +337,9 @@ export default function ProgressScreen() {
         >
           <View style={styles.headerRow}>
             <View>
-              <Text style={[styles.title, { color: colors.text.primary }]}>Tu Progreso</Text>
+              <Text style={[styles.title, { color: colors.text.primary }]}>{t('progress.title')}</Text>
               <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
-                {logs.length} registros en total
+                {t('progress.totalLogs', { count: logs.length })}
               </Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
@@ -374,14 +379,14 @@ export default function ProgressScreen() {
           >
             <View>
               <Text style={styles.streakNum}>{streak}</Text>
-              <Text style={styles.streakLabel}>días consecutivos</Text>
+              <Text style={styles.streakLabel}>{t('progress.dayStreak')}</Text>
             </View>
             <View style={styles.streakRight}>
               <Text style={styles.streakEmoji}>
                 {streak >= 14 ? '🏆' : streak >= 7 ? '🔥' : streak >= 3 ? '⚡' : '🌱'}
               </Text>
               <Text style={styles.streakDesc}>
-                {streak >= 14 ? '¡Increíble constancia!' : streak >= 7 ? '¡Una semana seguida!' : streak >= 3 ? 'Vas muy bien' : 'Empieza tu racha'}
+                {streak >= 14 ? t('progress.streakAmazing') : streak >= 7 ? t('progress.streakWeek') : streak >= 3 ? t('progress.streakGoing') : t('progress.streakStart')}
               </Text>
             </View>
             <View style={styles.streakDecor} />
@@ -390,29 +395,29 @@ export default function ProgressScreen() {
           {/* Calendario mensual */}
           <Card>
             <View style={styles.cardHeader}>
-              <Text style={[styles.cardTitle, { color: colors.text.primary }]}>Calendario</Text>
+              <Text style={[styles.cardTitle, { color: colors.text.primary }]}>{t('progress.calendar')}</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                 <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.primary }} />
-                <Text style={{ fontSize: 11, color: colors.text.muted }}>= registrado</Text>
+                <Text style={{ fontSize: 11, color: colors.text.muted }}>{t('progress.calendarLegend')}</Text>
               </View>
             </View>
-            <MonthCalendar logs={logs} colors={colors} />
+            <MonthCalendar logs={logs} colors={colors} locale={locale} />
           </Card>
 
           {/* Stats rápidas */}
           <View style={styles.statsRow}>
-            <StatCard label="Ánimo medio" value={avgMood || '—'} unit="/5" color={colors.symptom.mood} emoji="😊" colors={colors} />
-            <StatCard label="Agua diaria" value={avgWater ? `${Math.round(avgWater / 100) / 10}L` : '—'} unit="media" color="#5BA8D0" emoji="💧" colors={colors} />
-            <StatCard label="Registros" value={logs.length} unit="total" color={colors.primary} emoji="📝" colors={colors} />
+            <StatCard label={t('progress.moodAvg')} value={avgMood || '—'} unit="/5" color={colors.symptom.mood} emoji="😊" colors={colors} />
+            <StatCard label={t('progress.waterAvg')} value={avgWater ? `${Math.round(avgWater / 100) / 10}L` : '—'} unit={t('progress.avgLabel')} color="#5BA8D0" emoji="💧" colors={colors} />
+            <StatCard label={t('progress.logsLabel')} value={logs.length} unit={t('progress.totalLabel')} color={colors.primary} emoji="📝" colors={colors} />
           </View>
 
           {/* Síntomas */}
           <Card>
             <View style={styles.cardHeader}>
-              <Text style={[styles.cardTitle, { color: colors.text.primary }]}>Síntomas</Text>
+              <Text style={[styles.cardTitle, { color: colors.text.primary }]}>{t('progress.symptoms')}</Text>
               <View style={styles.legendRow}>
-                <LegendDot color={colors.symptom.mood} label="Ánimo" colors={colors} />
-                <LegendDot color={colors.symptom.nausea} label="Náuseas" colors={colors} />
+                <LegendDot color={colors.symptom.mood} label={t('progress.mood')} colors={colors} />
+                <LegendDot color={colors.symptom.nausea} label={t('progress.nausea')} colors={colors} />
               </View>
             </View>
             {periodLogs.length < 2
@@ -437,7 +442,7 @@ export default function ProgressScreen() {
           {/* Fatiga */}
           <Card>
             <View style={styles.cardHeader}>
-              <Text style={[styles.cardTitle, { color: colors.text.primary }]}>Fatiga</Text>
+              <Text style={[styles.cardTitle, { color: colors.text.primary }]}>{t('progress.fatigue')}</Text>
               <View style={[styles.trendPill, {
                 backgroundColor: avg(fatigueValues.slice(-3)) < avg(fatigueValues.slice(0, 3)) ? colors.successPale : colors.primaryPale,
               }]}>
@@ -449,7 +454,7 @@ export default function ProgressScreen() {
                 <Text style={[styles.trendText, {
                   color: avg(fatigueValues.slice(-3)) < avg(fatigueValues.slice(0, 3)) ? colors.success : colors.primary,
                 }]}>
-                  {avg(fatigueValues.slice(-3)) < avg(fatigueValues.slice(0, 3)) ? 'Bajando' : 'Subiendo'}
+                  {avg(fatigueValues.slice(-3)) < avg(fatigueValues.slice(0, 3)) ? t('progress.trendDown') : t('progress.trendUp')}
                 </Text>
               </View>
             </View>
@@ -463,7 +468,7 @@ export default function ProgressScreen() {
           {weightLogs.length >= 2 && (
             <Card>
               <View style={styles.cardHeader}>
-                <Text style={[styles.cardTitle, { color: colors.text.primary }]}>Peso</Text>
+                <Text style={[styles.cardTitle, { color: colors.text.primary }]}>{t('progress.weight')}</Text>
                 {weightDelta !== null && (
                   <View style={[styles.trendPill, { backgroundColor: weightDelta < 0 ? colors.successPale : colors.primaryPale }]}>
                     <Ionicons name={weightDelta < 0 ? 'trending-down' : 'trending-up'} size={13} color={weightDelta < 0 ? colors.success : colors.primary} />
@@ -473,18 +478,18 @@ export default function ProgressScreen() {
                   </View>
                 )}
               </View>
-              <LineChart values={weightValues} color={colors.sage} gradientId="weight" labels={weightLogs.map(l => dayLabel(l.date, period))} showDots />
+              <LineChart values={weightValues} color={colors.sage} gradientId="weight" labels={weightLogs.map(l => dayLabel(l.date, period, locale))} showDots />
               <View style={styles.weightRow}>
                 <View style={{ alignItems: 'center' }}>
                   <Text style={[styles.weightVal, { color: colors.text.primary }]}>{weightLogs[0].weight} kg</Text>
-                  <Text style={[styles.weightLbl, { color: colors.text.muted }]}>inicio período</Text>
+                  <Text style={[styles.weightLbl, { color: colors.text.muted }]}>{t('progress.weightStart')}</Text>
                 </View>
                 <View style={[styles.weightArrow, { backgroundColor: colors.sagePale }]}>
                   <Ionicons name="arrow-forward" size={14} color={colors.sage} />
                 </View>
                 <View style={{ alignItems: 'center' }}>
                   <Text style={[styles.weightVal, { color: colors.text.primary }]}>{weightLogs[weightLogs.length - 1].weight} kg</Text>
-                  <Text style={[styles.weightLbl, { color: colors.text.muted }]}>ahora</Text>
+                  <Text style={[styles.weightLbl, { color: colors.text.muted }]}>{t('progress.weightNow')}</Text>
                 </View>
               </View>
             </Card>
@@ -493,7 +498,7 @@ export default function ProgressScreen() {
           {/* Perspectivas */}
           <Card>
             <View style={styles.cardHeader}>
-              <Text style={[styles.cardTitle, { color: colors.text.primary }]}>Perspectivas</Text>
+              <Text style={[styles.cardTitle, { color: colors.text.primary }]}>{t('progress.insights')}</Text>
               {!isPremium && (
                 <View style={[styles.lockPill, { backgroundColor: colors.lavenderPale }]}>
                   <Ionicons name="lock-closed" size={11} color={colors.lavender} />
@@ -515,9 +520,9 @@ export default function ProgressScreen() {
               : (
                 <View style={{ alignItems: 'center', paddingVertical: 8 }}>
                   <Text style={[{ textAlign: 'center', ...typography.body, lineHeight: 22 }, { color: colors.text.secondary }]}>
-                    Desbloquea Premium para ver perspectivas personalizadas basadas en tus patrones
+                    {t('progress.insightsLocked')}
                   </Text>
-                  <Button title="Desbloquear" onPress={() => router.push('/paywall')} variant="outline" size="sm" style={{ marginTop: 14 }} />
+                  <Button title={t('progress.unlock')} onPress={() => router.push('/paywall')} variant="outline" size="sm" style={{ marginTop: 14 }} />
                 </View>
               )
             }
@@ -526,7 +531,7 @@ export default function ProgressScreen() {
           {/* Logros */}
           <Card>
             <View style={styles.cardHeader}>
-              <Text style={[styles.cardTitle, { color: colors.text.primary }]}>Logros</Text>
+              <Text style={[styles.cardTitle, { color: colors.text.primary }]}>{t('progress.achievements')}</Text>
               <Text style={{ fontSize: 18 }}>🏅</Text>
             </View>
             <AchievementsGrid logs={logs} colors={colors} />
@@ -561,11 +566,12 @@ function LegendDot({ color, label, colors }: { color: string; label: string; col
 }
 
 function EmptyState({ colors }: { colors: any }) {
+  const { t } = useTranslation();
   return (
     <View style={{ alignItems: 'center', paddingVertical: 24 }}>
       <Text style={{ fontSize: 32, marginBottom: 8 }}>📊</Text>
       <Text style={{ fontSize: 13, color: colors.text.muted, textAlign: 'center', lineHeight: 20 }}>
-        Registra al menos 2 días para ver tus tendencias
+        {t('progress.noData')}
       </Text>
     </View>
   );

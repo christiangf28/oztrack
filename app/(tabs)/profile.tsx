@@ -3,6 +3,7 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Switch, Share, Modal,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 
 const BOWEL_KEY = 'oztrack_bowel_tracker_enabled';
 const AVATAR_KEY = 'oztrack_avatar';
@@ -17,29 +18,35 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
+import { setAppLanguage } from '@/i18n';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useTheme } from '@/components/ui/ThemeContext';
 import { Card } from '@/components/ui/Card';
 import { typography, radius } from '@/components/ui/theme';
-import { UserProfile } from '@/types';
+import { UserProfile, Medication } from '@/types';
 
-const MED_LABELS: Record<string, string> = {
-  ozempic: 'Ozempic', wegovy: 'Wegovy', mounjaro: 'Mounjaro',
-  zepbound: 'Zepbound', rybelsus: 'Rybelsus', other: 'Otro',
-};
-const GOAL_LABELS: Record<string, string> = {
-  weight_loss: 'Control de peso', diabetes: 'Control de diabetes', other: 'Salud general',
-};
+const MEDICATION_IDS: Medication[] = [
+  'ozempic', 'wegovy', 'mounjaro', 'zepbound', 'rybelsus',
+  'saxenda', 'victoza', 'trulicity', 'compounded', 'other',
+];
+const GOAL_IDS = ['weight_loss', 'diabetes', 'other'] as const;
 
 export default function ProfileScreen() {
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { isPremium } = useSubscription();
   const { colors, isDark, mode, setMode } = useTheme();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [bowelEnabled, setBowelEnabled] = useState(false);
-  const [editField, setEditField] = useState<'medication' | 'goals' | 'avatar' | null>(null);
+  const [editField, setEditField] = useState<'medication' | 'goals' | 'avatar' | 'language' | null>(null);
   const [avatar, setAvatar] = useState<{ type: 'emoji'; value: string } | null>(null);
+
+  const MED_LABEL = (id: string) => t(`onboarding.medication.meds.${id}` as const, id);
+  const GOAL_LABEL = (id: string) => {
+    const key = id === 'weight_loss' ? 'weightLoss' : id;
+    return t(`onboarding.goals.${key}` as const, id);
+  };
 
   useEffect(() => {
     AsyncStorage.getItem(BOWEL_KEY).then(v => setBowelEnabled(v === 'true'));
@@ -58,7 +65,7 @@ export default function ProfileScreen() {
     supabase.from('users').select('*').eq('id', user.id).single()
       .then(({ data, error }) => {
         if (data) setProfile(data as UserProfile);
-        else if (error) Alert.alert('Error al cargar perfil', error.message);
+        else if (error) Alert.alert(t('profile.loadError'), error.message);
       });
   }, [user]);
 
@@ -72,23 +79,23 @@ export default function ProfileScreen() {
       .eq('user_id', user.id)
       .order('date', { ascending: true });
     if (!logs?.length) {
-      Alert.alert('Sin datos', 'Aún no tienes registros para exportar.');
+      Alert.alert(t('profile.exportNoData'), t('profile.exportNoDataBody'));
       return;
     }
-    const headers = 'Fecha,Náuseas,Fatiga,Ánimo,Apetito,Agua (ml),Peso (kg),Visitas al baño,Notas';
+    const headers = 'Date,Nausea,Fatigue,Mood,Appetite,Water (ml),Weight (kg),Bowel movements,Notes';
     const rows = (logs as any[]).map(l =>
       `${l.date},${l.nausea},${l.fatigue},${l.mood},${l.appetite ?? ''},${l.water_ml},${l.weight ?? ''},${l.bowel_movements ?? ''},"${String(l.meal_notes ?? '').replace(/"/g, '""')}"`
     );
     try {
-      await Share.share({ message: [headers, ...rows].join('\n'), title: 'Semmly — Mis registros' });
+      await Share.share({ message: [headers, ...rows].join('\n'), title: t('profile.exportTitle') });
     } catch {}
   }
 
   async function handleSignOut() {
-    Alert.alert('Cerrar sesión', '¿Estás segura?', [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(t('profile.signOutConfirmTitle'), t('profile.signOutConfirmBody'), [
+      { text: t('profile.cancel'), style: 'cancel' },
       {
-        text: 'Cerrar sesión', style: 'destructive',
+        text: t('profile.signOut'), style: 'destructive',
         onPress: async () => { await supabase.auth.signOut(); router.replace('/(auth)/login'); },
       },
     ]);
@@ -111,28 +118,33 @@ export default function ProfileScreen() {
     if (!user || !profile) return;
     const { error } = await supabase.from('users').update({ [field]: value }).eq('id', user.id);
     if (error) {
-      Alert.alert('Error', 'No se pudo guardar el cambio. Intenta de nuevo.');
+      Alert.alert(t('common.error'), t('profile.updateError'));
       return;
     }
     setProfile({ ...profile, [field]: value });
     setEditField(null);
   }
 
+  async function handleSelectLanguage(lang: 'en' | 'es') {
+    await setAppLanguage(lang);
+    setEditField(null);
+  }
+
   async function handleDeleteAccount() {
     Alert.alert(
-      'Eliminar cuenta',
-      'Se eliminarán permanentemente tu cuenta y todos tus datos de salud. Esta acción no se puede deshacer.',
+      t('profile.deleteConfirmTitle'),
+      t('profile.deleteConfirmBody'),
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: t('profile.cancel'), style: 'cancel' },
         {
-          text: 'Eliminar', style: 'destructive',
+          text: t('profile.deleteConfirmBtn'), style: 'destructive',
           onPress: () => Alert.alert(
-            '¿Segura?',
-            'Esta es tu última oportunidad. Todo será eliminado definitivamente.',
+            t('profile.deleteFinalTitle'),
+            t('profile.deleteFinalBody'),
             [
-              { text: 'Cancelar', style: 'cancel' },
+              { text: t('profile.cancel'), style: 'cancel' },
               {
-                text: 'Sí, eliminar todo', style: 'destructive',
+                text: t('profile.deleteFinalBtn'), style: 'destructive',
                 onPress: async () => {
                   try {
                     if (!user) return;
@@ -141,7 +153,7 @@ export default function ProfileScreen() {
                     await AsyncStorage.clear();
                     router.replace('/welcome');
                   } catch {
-                    Alert.alert('Error', 'No se pudo eliminar la cuenta. Escríbenos a privacy@getsemmly.app');
+                    Alert.alert(t('common.error'), t('profile.deleteError'));
                   }
                 },
               },
@@ -153,10 +165,12 @@ export default function ProfileScreen() {
   }
 
   const themeOptions: { label: string; value: 'light' | 'dark' | 'system'; icon: any }[] = [
-    { label: 'Claro', value: 'light', icon: 'sunny-outline' },
-    { label: 'Oscuro', value: 'dark', icon: 'moon-outline' },
-    { label: 'Sistema', value: 'system', icon: 'phone-portrait-outline' },
+    { label: t('profile.themeLight'), value: 'light', icon: 'sunny-outline' },
+    { label: t('profile.themeDark'), value: 'dark', icon: 'moon-outline' },
+    { label: t('profile.themeSystem'), value: 'system', icon: 'phone-portrait-outline' },
   ];
+
+  const dateLocale = i18n.language.startsWith('es') ? 'es-ES' : 'en-US';
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
@@ -192,23 +206,23 @@ export default function ProfileScreen() {
           {/* Perfil */}
           {profile && (
             <Card style={styles.card}>
-              <Text style={[styles.sectionLabel, { color: colors.text.muted }]}>MI PERFIL</Text>
-              <EditableInfoRow icon="medical" color={colors.primary} label="Medicamento" value={MED_LABELS[profile.medication] ?? profile.medication} colors={colors} onPress={() => setEditField('medication')} />
-              <EditableInfoRow icon="flag" color={colors.sage} label="Objetivo" value={GOAL_LABELS[profile.goals] ?? profile.goals} colors={colors} onPress={() => setEditField('goals')} />
-              <InfoRow icon="calendar" color={colors.lavender} label="Miembro desde" value={profile.created_at ? new Date(profile.created_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long' }) : '—'} colors={colors} last />
+              <Text style={[styles.sectionLabel, { color: colors.text.muted }]}>{t('profile.sectionMyProfile')}</Text>
+              <EditableInfoRow icon="medical" color={colors.primary} label={t('profile.medication')} value={MED_LABEL(profile.medication)} colors={colors} onPress={() => setEditField('medication')} />
+              <EditableInfoRow icon="flag" color={colors.sage} label={t('profile.goal')} value={GOAL_LABEL(profile.goals)} colors={colors} onPress={() => setEditField('goals')} />
+              <InfoRow icon="calendar" color={colors.lavender} label={t('profile.memberSince')} value={profile.created_at ? new Date(profile.created_at).toLocaleDateString(dateLocale, { year: 'numeric', month: 'long' }) : '—'} colors={colors} last />
             </Card>
           )}
 
           {/* Suscripción */}
           <Card style={styles.card}>
-            <Text style={[styles.sectionLabel, { color: colors.text.muted }]}>SUSCRIPCIÓN</Text>
+            <Text style={[styles.sectionLabel, { color: colors.text.muted }]}>{t('profile.sectionSubscription')}</Text>
             <TouchableOpacity style={styles.menuRow} onPress={() => router.push('/paywall?dismissable=1')} activeOpacity={0.7}>
               <LinearGradient colors={isPremium ? colors.gradients.premium : [colors.border, colors.borderLight]} style={styles.menuIconBox}>
                 <Ionicons name={isPremium ? 'star' : 'star-outline'} size={18} color={isPremium ? '#fff' : colors.text.muted} />
               </LinearGradient>
               <View style={styles.menuTextBlock}>
-                <Text style={[styles.menuLabel, { color: colors.text.primary }]}>{isPremium ? 'Premium activo' : 'Actualizar a Premium'}</Text>
-                <Text style={[styles.menuDetail, { color: colors.text.muted }]}>{isPremium ? 'Acceso completo' : '7 días gratis · $9.99/mes'}</Text>
+                <Text style={[styles.menuLabel, { color: colors.text.primary }]}>{isPremium ? t('profile.premiumActive') : t('profile.upgradeToPremium')}</Text>
+                <Text style={[styles.menuDetail, { color: colors.text.muted }]}>{isPremium ? t('profile.fullAccess') : t('profile.trialPrice')}</Text>
               </View>
               <Ionicons name="chevron-forward" size={16} color={colors.text.muted} />
             </TouchableOpacity>
@@ -216,7 +230,7 @@ export default function ProfileScreen() {
 
           {/* Tema */}
           <Card style={styles.card}>
-            <Text style={[styles.sectionLabel, { color: colors.text.muted }]}>APARIENCIA</Text>
+            <Text style={[styles.sectionLabel, { color: colors.text.muted }]}>{t('profile.sectionAppearance')}</Text>
             <View style={[styles.themeToggle, { backgroundColor: colors.backgroundWarm, borderColor: colors.border }]}>
               {themeOptions.map(opt => (
                 <TouchableOpacity
@@ -245,16 +259,16 @@ export default function ProfileScreen() {
 
           {/* Ajustes */}
           <Card style={styles.card}>
-            <Text style={[styles.sectionLabel, { color: colors.text.muted }]}>AJUSTES</Text>
-            <MenuItem icon="notifications-outline" color={colors.primary} label="Notificaciones" detail="Recordatorio diario y día de inyección" onPress={() => router.push('/notifications')} colors={colors} />
+            <Text style={[styles.sectionLabel, { color: colors.text.muted }]}>{t('profile.sectionSettings')}</Text>
+            <MenuItem icon="notifications-outline" color={colors.primary} label={t('profile.notifications')} detail={t('profile.notificationsDetail')} onPress={() => router.push('/notifications')} colors={colors} />
             <View style={[{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },
               { borderBottomWidth: 1, borderBottomColor: colors.borderLight }]}>
               <View style={{ width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.sage + '18' }}>
                 <Text style={{ fontSize: 18 }}>🚽</Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ ...typography.bodyMed, color: colors.text.primary }}>Tránsito intestinal</Text>
-                <Text style={{ ...typography.small, color: colors.text.muted, marginTop: 1 }}>Registrar visitas diarias al baño</Text>
+                <Text style={{ ...typography.bodyMed, color: colors.text.primary }}>{t('profile.bowelLabel')}</Text>
+                <Text style={{ ...typography.small, color: colors.text.muted, marginTop: 1 }}>{t('profile.bowelDetail')}</Text>
               </View>
               <Switch
                 value={bowelEnabled}
@@ -263,10 +277,10 @@ export default function ProfileScreen() {
                 thumbColor={bowelEnabled ? colors.primary : colors.backgroundWarm}
               />
             </View>
-            <MenuItem icon="download-outline" color="#5BA8D0" label="Exportar mis datos" detail="CSV con todos tus registros" onPress={exportCSV} colors={colors} />
-            <MenuItem icon="globe-outline" color={colors.sage} label="Idioma" detail="Español" onPress={() => Alert.alert('Idioma', 'Actualmente disponible solo en español.\n\nInglés próximamente 🌍')} colors={colors} />
-            <MenuItem icon="document-text-outline" color={colors.lavender} label="Política de Privacidad" onPress={() => router.push('/legal/privacy')} colors={colors} />
-            <MenuItem icon="shield-checkmark-outline" color="#E8926A" label="Términos de Servicio" onPress={() => router.push('/legal/terms')} colors={colors} last />
+            <MenuItem icon="download-outline" color="#5BA8D0" label={t('profile.exportData')} detail={t('profile.exportDataDetail')} onPress={exportCSV} colors={colors} />
+            <MenuItem icon="globe-outline" color={colors.sage} label={t('profile.language')} detail={i18n.language.startsWith('es') ? 'Español' : 'English'} onPress={() => setEditField('language')} colors={colors} />
+            <MenuItem icon="document-text-outline" color={colors.lavender} label={t('profile.privacy')} onPress={() => router.push('/legal/privacy')} colors={colors} />
+            <MenuItem icon="shield-checkmark-outline" color="#E8926A" label={t('profile.terms')} onPress={() => router.push('/legal/terms')} colors={colors} last />
           </Card>
 
           {/* Cerrar sesión */}
@@ -278,7 +292,7 @@ export default function ProfileScreen() {
             <View style={[styles.signOutIcon, { backgroundColor: colors.error + '18' }]}>
               <Ionicons name="log-out-outline" size={18} color={colors.error} />
             </View>
-            <Text style={[styles.signOutText, { color: colors.error }]}>Cerrar sesión</Text>
+            <Text style={[styles.signOutText, { color: colors.error }]}>{t('profile.signOut')}</Text>
           </TouchableOpacity>
 
           {/* Eliminar cuenta */}
@@ -288,19 +302,19 @@ export default function ProfileScreen() {
             activeOpacity={0.7}
           >
             <Ionicons name="trash-outline" size={16} color={colors.error} />
-            <Text style={[styles.deleteText, { color: colors.error }]}>Eliminar mi cuenta y datos</Text>
+            <Text style={[styles.deleteText, { color: colors.error }]}>{t('profile.deleteAccount')}</Text>
           </TouchableOpacity>
 
-          <Text style={[styles.version, { color: colors.text.muted }]}>Semmly v1.0 · hecho con 🌸</Text>
+          <Text style={[styles.version, { color: colors.text.muted }]}>{t('profile.versionFooter')}</Text>
 
           {/* Links legales */}
           <View style={styles.legalRow}>
             <TouchableOpacity onPress={() => router.push('/legal/privacy')}>
-              <Text style={[styles.legalLink, { color: colors.text.muted }]}>Política de Privacidad</Text>
+              <Text style={[styles.legalLink, { color: colors.text.muted }]}>{t('profile.privacy')}</Text>
             </TouchableOpacity>
             <Text style={[styles.legalSep, { color: colors.text.muted }]}>·</Text>
             <TouchableOpacity onPress={() => router.push('/legal/terms')}>
-              <Text style={[styles.legalLink, { color: colors.text.muted }]}>Términos de Servicio</Text>
+              <Text style={[styles.legalLink, { color: colors.text.muted }]}>{t('profile.terms')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -311,11 +325,14 @@ export default function ProfileScreen() {
           <TouchableOpacity activeOpacity={1} style={[styles.modalSheet, { backgroundColor: colors.surface }]}>
             <View style={[styles.modalHandle, { backgroundColor: colors.border }]} />
             <Text style={[styles.modalTitle, { color: colors.text.primary }]}>
-              {editField === 'avatar' ? 'Foto de perfil' : editField === 'medication' ? 'Medicamento' : 'Objetivo'}
+              {editField === 'avatar' ? t('profile.editPhotoTitle')
+                : editField === 'medication' ? t('profile.editMedicationTitle')
+                : editField === 'language' ? t('profile.language')
+                : t('profile.editGoalTitle')}
             </Text>
             {editField === 'avatar' ? (
               <View>
-                <Text style={[{ fontSize: 11, fontWeight: '700', letterSpacing: 1, color: colors.text.muted, marginBottom: 4 }]}>EMOJI</Text>
+                <Text style={[{ fontSize: 11, fontWeight: '700', letterSpacing: 1, color: colors.text.muted, marginBottom: 4 }]}>{t('profile.emojiLabel')}</Text>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                   {AVATAR_EMOJIS.map(e => (
                     <TouchableOpacity key={e} onPress={() => pickEmoji(e)}
@@ -327,29 +344,45 @@ export default function ProfileScreen() {
                 {avatar && (
                   <TouchableOpacity style={[styles.modalOption, { marginTop: 12 }]} onPress={removeAvatar}>
                     <Ionicons name="trash-outline" size={18} color={colors.error} />
-                    <Text style={[styles.modalOptionText, { color: colors.error, flex: 1, marginLeft: 12 }]}>Eliminar foto</Text>
+                    <Text style={[styles.modalOptionText, { color: colors.error, flex: 1, marginLeft: 12 }]}>{t('profile.removePhoto')}</Text>
                   </TouchableOpacity>
                 )}
               </View>
-            ) : editField === 'medication'
-              ? Object.entries(MED_LABELS).map(([key, label]) => (
+            ) : editField === 'language' ? (
+              <View>
+                {([
+                  { code: 'en' as const, label: 'English' },
+                  { code: 'es' as const, label: 'Español' },
+                ]).map(opt => (
                   <TouchableOpacity
-                    key={key}
-                    style={[styles.modalOption, profile?.medication === key && { backgroundColor: colors.primaryLight + '30' }]}
-                    onPress={() => handleUpdateProfile('medication', key)}
+                    key={opt.code}
+                    style={[styles.modalOption, i18n.language.startsWith(opt.code) && { backgroundColor: colors.primaryLight + '30' }]}
+                    onPress={() => handleSelectLanguage(opt.code)}
                   >
-                    <Text style={[styles.modalOptionText, { color: colors.text.primary }, profile?.medication === key && { color: colors.primary, fontWeight: '700' }]}>{label}</Text>
-                    {profile?.medication === key && <Ionicons name="checkmark" size={18} color={colors.primary} />}
+                    <Text style={[styles.modalOptionText, { color: colors.text.primary }, i18n.language.startsWith(opt.code) && { color: colors.primary, fontWeight: '700' }]}>{opt.label}</Text>
+                    {i18n.language.startsWith(opt.code) && <Ionicons name="checkmark" size={18} color={colors.primary} />}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            ) : editField === 'medication'
+              ? MEDICATION_IDS.map(id => (
+                  <TouchableOpacity
+                    key={id}
+                    style={[styles.modalOption, profile?.medication === id && { backgroundColor: colors.primaryLight + '30' }]}
+                    onPress={() => handleUpdateProfile('medication', id)}
+                  >
+                    <Text style={[styles.modalOptionText, { color: colors.text.primary }, profile?.medication === id && { color: colors.primary, fontWeight: '700' }]}>{MED_LABEL(id)}</Text>
+                    {profile?.medication === id && <Ionicons name="checkmark" size={18} color={colors.primary} />}
                   </TouchableOpacity>
                 ))
-              : Object.entries(GOAL_LABELS).map(([key, label]) => (
+              : GOAL_IDS.map(id => (
                   <TouchableOpacity
-                    key={key}
-                    style={[styles.modalOption, profile?.goals === key && { backgroundColor: colors.primaryLight + '30' }]}
-                    onPress={() => handleUpdateProfile('goals', key)}
+                    key={id}
+                    style={[styles.modalOption, profile?.goals === id && { backgroundColor: colors.primaryLight + '30' }]}
+                    onPress={() => handleUpdateProfile('goals', id)}
                   >
-                    <Text style={[styles.modalOptionText, { color: colors.text.primary }, profile?.goals === key && { color: colors.primary, fontWeight: '700' }]}>{label}</Text>
-                    {profile?.goals === key && <Ionicons name="checkmark" size={18} color={colors.primary} />}
+                    <Text style={[styles.modalOptionText, { color: colors.text.primary }, profile?.goals === id && { color: colors.primary, fontWeight: '700' }]}>{GOAL_LABEL(id)}</Text>
+                    {profile?.goals === id && <Ionicons name="checkmark" size={18} color={colors.primary} />}
                   </TouchableOpacity>
                 ))}
           </TouchableOpacity>

@@ -23,7 +23,7 @@ export default function LoginScreen() {
   const [error, setError] = useState('');
 
   async function handleLogin() {
-    if (!email || !password) { setError('Por favor completa todos los campos'); return; }
+    if (!email || !password) { setError(t('auth.fillAllFields')); return; }
     setLoading(true);
     setError('');
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -58,25 +58,23 @@ export default function LoginScreen() {
             <View style={styles.logoCircle}>
               <Text style={styles.logoEmoji}>💊</Text>
             </View>
-            <Text style={styles.appName}>semmly</Text>
-            <Text style={styles.tagline}>Tu compañera en el camino GLP-1</Text>
+            <Text style={styles.appName}>Semmly</Text>
+            <Text style={styles.tagline}>{t('auth.tagline')}</Text>
             <View style={styles.decor1} />
             <View style={styles.decor2} />
           </LinearGradient>
 
           {/* Formulario */}
           <View style={styles.form}>
-            <Text style={[styles.formTitle, { color: colors.text.primary }]}>Bienvenida de nuevo</Text>
+            <Text style={[styles.formTitle, { color: colors.text.primary }]}>{t('auth.welcomeBack')}</Text>
             <Text style={[styles.formSubtitle, { color: colors.text.secondary }]}>
-              Inicia sesión para continuar tu seguimiento
+              {t('auth.loginSubtitle')}
             </Text>
 
             {!SUPABASE_CONFIGURED && (
               <View style={[styles.warnBanner, { backgroundColor: colors.warningPale, borderColor: colors.warning + '40' }]}>
                 <Ionicons name="construct-outline" size={16} color={colors.warning} />
-                <Text style={styles.warnText}>
-                  Agrega tus claves de Supabase en el archivo <Text style={{ fontWeight: '700' }}>.env</Text> para continuar.
-                </Text>
+                <Text style={styles.warnText}>{t('auth.envWarning')}</Text>
               </View>
             )}
 
@@ -88,15 +86,15 @@ export default function LoginScreen() {
             ) : null}
 
             <Input
-              label="Correo electrónico"
+              label={t('auth.email')}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
-              placeholder="tu@correo.com"
+              placeholder={t('auth.emailPlaceholder')}
               icon="mail-outline"
             />
             <Input
-              label="Contraseña"
+              label={t('auth.password')}
               value={password}
               onChangeText={setPassword}
               secureToggle
@@ -105,14 +103,14 @@ export default function LoginScreen() {
             />
 
             <TouchableOpacity style={styles.forgotBtn}>
-              <Text style={[styles.forgotText, { color: colors.primary }]}>¿Olvidaste tu contraseña?</Text>
+              <Text style={[styles.forgotText, { color: colors.primary }]}>{t('auth.forgotPassword')}</Text>
             </TouchableOpacity>
 
-            <Button title="Iniciar sesión" onPress={handleLogin} loading={loading} />
+            <Button title={t('auth.signIn')} onPress={handleLogin} loading={loading} />
 
             <View style={styles.divider}>
               <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-              <Text style={[styles.dividerText, { color: colors.text.muted }]}>o continúa con</Text>
+              <Text style={[styles.dividerText, { color: colors.text.muted }]}>{t('auth.orContinueWith')}</Text>
               <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
             </View>
 
@@ -122,16 +120,16 @@ export default function LoginScreen() {
               activeOpacity={0.8}
             >
               <Text style={styles.googleIcon}>G</Text>
-              <Text style={[styles.googleText, { color: colors.text.primary }]}>Continuar con Google</Text>
+              <Text style={[styles.googleText, { color: colors.text.primary }]}>{t('auth.google')}</Text>
             </TouchableOpacity>
           </View>
 
           {/* Footer */}
           <View style={styles.footer}>
-            <Text style={[styles.footerText, { color: colors.text.secondary }]}>¿No tienes cuenta? </Text>
+            <Text style={[styles.footerText, { color: colors.text.secondary }]}>{t('auth.noAccount')} </Text>
             <Link href="/(auth)/register" asChild>
               <TouchableOpacity>
-                <Text style={[styles.footerLink, { color: colors.primary }]}>Regístrate gratis</Text>
+                <Text style={[styles.footerLink, { color: colors.primary }]}>{t('auth.signUpFree')}</Text>
               </TouchableOpacity>
             </Link>
           </View>

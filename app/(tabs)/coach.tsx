@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { askCoach, CoachDailyLimitError } from '@/lib/anthropic';
 import { Sentry } from '@/lib/sentry';
@@ -33,14 +34,8 @@ function stripMarkdown(text: string): string {
     .trim();
 }
 
-const SUGGESTIONS = [
-  '¿Por qué tengo náuseas?',
-  'Consejos para el apetito',
-  '¿Cuánto tarda en hacer efecto?',
-  '¿Qué alimentos me convienen?',
-];
-
 export default function CoachScreen() {
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const { user } = useAuth();
   const { isPremium, loading: subLoading } = useSubscription();
@@ -48,6 +43,13 @@ export default function CoachScreen() {
   const [input, setInput] = useState('');
   const [thinking, setThinking] = useState(false);
   const listRef = useRef<FlatList>(null);
+
+  const SUGGESTIONS = [
+    t('coach.suggestion1'),
+    t('coach.suggestion2'),
+    t('coach.suggestion3'),
+    t('coach.suggestion4'),
+  ];
 
   useEffect(() => {
     if (!user || !isPremium) return;
@@ -64,16 +66,8 @@ export default function CoachScreen() {
           const shown = await AsyncStorage.getItem(COACH_INTRO_KEY);
           if (!shown) {
             setMessages([
-              {
-                user_id: user.id,
-                role: 'assistant',
-                content: '¡Hola! Soy Semmly 🌸 Estoy aquí para acompañarte en tu experiencia con GLP-1. Puedo ayudarte con dudas sobre síntomas, efectos secundarios, alimentación y hábitos saludables.',
-              },
-              {
-                user_id: user.id,
-                role: 'assistant',
-                content: '¿Sobre qué te gustaría hablar hoy? Puedes preguntarme cualquier cosa sobre tu tratamiento.',
-              },
+              { user_id: user.id, role: 'assistant', content: t('coach.introLine1') },
+              { user_id: user.id, role: 'assistant', content: t('coach.introLine2') },
             ]);
             await AsyncStorage.setItem(COACH_INTRO_KEY, 'true');
           }
@@ -91,7 +85,7 @@ export default function CoachScreen() {
 
     try {
       const history = [...messages, userMsg].map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
-      const replyContent = stripMarkdown(await askCoach(history));
+      const replyContent = stripMarkdown(await askCoach(history, i18n.language));
       const assistantMsg: ChatMessage = { user_id: user.id, role: 'assistant', content: replyContent };
       setMessages(prev => [...prev, assistantMsg]);
 
@@ -105,15 +99,13 @@ export default function CoachScreen() {
       setMessages(prev => [...prev, {
         user_id: user.id,
         role: 'assistant' as const,
-        content: limitReached
-          ? 'Llegaste al límite de mensajes por hoy. Inténtalo de nuevo en unas horas 🌸'
-          : 'Hubo un error al procesar tu mensaje. Por favor intenta de nuevo.',
+        content: limitReached ? t('coach.limitReached') : t('coach.genericError'),
       }]);
     } finally {
       setThinking(false);
       setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 100);
     }
-  }, [input, thinking, user, messages]);
+  }, [input, thinking, user, messages, i18n.language]);
 
   if (subLoading) {
     return (
@@ -142,7 +134,7 @@ export default function CoachScreen() {
         </View>
         <View style={{ flex: 1 }}>
           <Text style={[styles.coachName, { color: colors.text.primary }]}>Semmly</Text>
-          <Text style={[styles.coachStatus, { color: colors.text.muted }]}>Online · Siempre disponible</Text>
+          <Text style={[styles.coachStatus, { color: colors.text.muted }]}>{t('coach.online')}</Text>
         </View>
         <View style={[styles.premiumPill, { backgroundColor: colors.lavender }]}>
           <Ionicons name="star" size={11} color="#fff" />
@@ -156,7 +148,7 @@ export default function CoachScreen() {
         data={messages}
         keyExtractor={(_, i) => i.toString()}
         contentContainerStyle={styles.messageList}
-        ListEmptyComponent={<WelcomeMessage onSuggest={sendMessage} />}
+        ListEmptyComponent={<WelcomeMessage onSuggest={sendMessage} suggestions={SUGGESTIONS} />}
         renderItem={({ item }) => <MessageBubble message={item} />}
         ListFooterComponent={thinking ? <TypingIndicator /> : null}
         onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
@@ -172,7 +164,7 @@ export default function CoachScreen() {
           }]}
           value={input}
           onChangeText={setInput}
-          placeholder="Pregúntame sobre tu experiencia con GLP-1..."
+          placeholder={t('coach.placeholder')}
           placeholderTextColor={colors.text.muted}
           multiline
           returnKeyType="send"
@@ -221,6 +213,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
 }
 
 function TypingIndicator() {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   return (
     <View style={styles.bubbleRow}>
@@ -230,25 +223,25 @@ function TypingIndicator() {
       <View style={[styles.bubble, styles.bubbleAI, styles.typingBubble, {
         backgroundColor: colors.surface, borderColor: colors.border,
       }]}>
-        <Text style={[styles.typingText, { color: colors.text.muted }]}>Escribiendo</Text>
+        <Text style={[styles.typingText, { color: colors.text.muted }]}>{t('coach.thinking')}</Text>
         <ActivityIndicator size="small" color={colors.primary} style={{ marginLeft: 6 }} />
       </View>
     </View>
   );
 }
 
-function WelcomeMessage({ onSuggest }: { onSuggest: (text: string) => void }) {
+function WelcomeMessage({ onSuggest, suggestions }: { onSuggest: (text: string) => void; suggestions: string[] }) {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   return (
     <View style={styles.welcome}>
       <Text style={styles.welcomeEmoji}>🌸</Text>
-      <Text style={[styles.welcomeTitle, { color: colors.text.primary }]}>¡Hola! Soy Semmly</Text>
+      <Text style={[styles.welcomeTitle, { color: colors.text.primary }]}>{t('coach.welcomeTitle')}</Text>
       <Text style={[styles.welcomeText, { color: colors.text.secondary }]}>
-        Puedo ayudarte con información educativa sobre tu medicación GLP-1, síntomas y hábitos saludables.
-        {'\n\n'}¿Sobre qué te gustaría hablar hoy?
+        {t('coach.welcomeText')}
       </Text>
       <View style={styles.suggestions}>
-        {SUGGESTIONS.map(q => (
+        {suggestions.map(q => (
           <TouchableOpacity
             key={q}
             style={[styles.suggestion, { backgroundColor: colors.surfaceRose, borderColor: colors.border }]}
@@ -265,7 +258,9 @@ function WelcomeMessage({ onSuggest }: { onSuggest: (text: string) => void }) {
 }
 
 function PaywallPrompt() {
+  const { t } = useTranslation();
   const { colors } = useTheme();
+  const FEATURES = [t('coach.paywallFeature1'), t('coach.paywallFeature2'), t('coach.paywallFeature3')];
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
       <LinearGradient
@@ -276,23 +271,19 @@ function PaywallPrompt() {
         <Text style={styles.paywallEmoji}>✨</Text>
         <Text style={[styles.paywallTitle, { color: colors.text.primary }]}>Semmly</Text>
         <Text style={[styles.paywallDesc, { color: colors.text.secondary }]}>
-          Tu coach personal de IA, disponible 24/7, especializado en medicamentos GLP-1
+          {t('coach.paywallDesc')}
         </Text>
         <View style={styles.paywallFeatures}>
-          {[
-            'Respuestas personalizadas a tus síntomas',
-            'Basadas en guías ADA y NHS',
-            'Sin juicios, con empatía',
-          ].map(f => (
+          {FEATURES.map(f => (
             <View key={f} style={styles.paywallFeatureRow}>
               <Ionicons name="checkmark-circle" size={18} color={colors.sage} />
               <Text style={[styles.paywallFeatureText, { color: colors.text.primary }]}>{f}</Text>
             </View>
           ))}
         </View>
-        <Button title="Probar 7 días gratis" onPress={() => router.push('/paywall')} />
+        <Button title={t('coach.paywallCta')} onPress={() => router.push('/paywall')} />
         <Text style={[styles.paywallNote, { color: colors.text.muted }]}>
-          Sin tarjeta de crédito · Cancela cuando quieras
+          {t('coach.paywallNote')}
         </Text>
       </LinearGradient>
     </SafeAreaView>
