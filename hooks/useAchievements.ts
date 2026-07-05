@@ -1,4 +1,5 @@
 import { DailyLog } from '@/types';
+import { localDateStr, parseLocalDate } from '@/lib/dates';
 
 export interface Achievement {
   id: string;
@@ -8,15 +9,16 @@ export interface Achievement {
   unlocked: boolean;
 }
 
-function calcStreak(logs: DailyLog[]): number {
+/** Racha de días consecutivos con registro, contando desde hoy (fecha local). */
+export function calcStreak(logs: DailyLog[]): number {
   if (!logs.length) return 0;
   let streak = 0;
-  let current = new Date().toISOString().split('T')[0];
+  let current = localDateStr();
   for (const log of logs) {
     if (log.date === current) {
       streak++;
-      const d = new Date(current); d.setDate(d.getDate() - 1);
-      current = d.toISOString().split('T')[0];
+      const d = parseLocalDate(current); d.setDate(d.getDate() - 1);
+      current = localDateStr(d);
     } else break;
   }
   return streak;

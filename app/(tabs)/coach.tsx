@@ -84,15 +84,12 @@ export default function CoachScreen() {
     setThinking(true);
 
     try {
+      // La Edge Function persiste ambos mensajes server-side (el rate limit
+      // cuenta filas que el cliente no controla) — acá no se inserta nada.
       const history = [...messages, userMsg].map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
       const replyContent = stripMarkdown(await askCoach(history, i18n.language));
       const assistantMsg: ChatMessage = { user_id: user.id, role: 'assistant', content: replyContent };
       setMessages(prev => [...prev, assistantMsg]);
-
-      await supabase.from('chat_messages').insert([
-        { ...userMsg, created_at: new Date().toISOString() },
-        { ...assistantMsg, created_at: new Date().toISOString() },
-      ]);
     } catch (e) {
       const limitReached = e instanceof CoachDailyLimitError;
       if (!limitReached) Sentry.captureException(e);
@@ -167,6 +164,7 @@ export default function CoachScreen() {
           placeholder={t('coach.placeholder')}
           placeholderTextColor={colors.text.muted}
           multiline
+          maxLength={1000}
           returnKeyType="send"
           onSubmitEditing={() => sendMessage()}
         />

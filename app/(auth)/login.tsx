@@ -102,9 +102,9 @@ export default function LoginScreen() {
               icon="lock-closed-outline"
             />
 
-            <TouchableOpacity style={styles.forgotBtn}>
-              <Text style={[styles.forgotText, { color: colors.primary }]}>{t('auth.forgotPassword')}</Text>
-            </TouchableOpacity>
+            {/* "Olvidé mi contraseña" removido para v1: el flujo de reset
+                requiere deep-linking de vuelta a la app (pendiente en bloque
+                Auth). Un botón sin acción es peor que no tenerlo. */}
 
             <Button title={t('auth.signIn')} onPress={handleLogin} loading={loading} />
 

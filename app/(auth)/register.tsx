@@ -43,8 +43,15 @@ export default function RegisterScreen() {
       await logInRevenueCat(user.id);
       const quizComplete = await loadQuiz();
       if (quizComplete) {
-        await saveProfileFromQuiz(user.id, email);
+        const profileError = await saveProfileFromQuiz(user.id, email);
         setLoading(false);
+        if (profileError) {
+          // La cuenta ya existe pero el perfil no se guardó (ej. red).
+          // El quiz sigue persistido: la pantalla de resumen reintenta el
+          // guardado con la sesión ya activa.
+          router.replace('/onboarding/value');
+          return;
+        }
         router.replace('/paywall');
         return;
       }

@@ -150,6 +150,10 @@ export default function ProfileScreen() {
                     if (!user) return;
                     const { error } = await supabase.rpc('delete_user');
                     if (error) throw error;
+                    // signOut limpia el JWT de SecureStore (AsyncStorage.clear
+                    // no lo toca); sin esto, al reabrir la app queda una sesión
+                    // "válida" de un usuario que ya no existe.
+                    await supabase.auth.signOut();
                     await AsyncStorage.clear();
                     router.replace('/welcome');
                   } catch {

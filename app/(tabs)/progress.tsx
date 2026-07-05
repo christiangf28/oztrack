@@ -17,7 +17,8 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { typography, radius } from '@/components/ui/theme';
 import { DailyLog } from '@/types';
-import { computeAchievements } from '@/hooks/useAchievements';
+import { computeAchievements, calcStreak } from '@/hooks/useAchievements';
+import { localDateStr, parseLocalDate } from '@/lib/dates';
 
 const SCREEN_W = Dimensions.get('window').width;
 const CHART_W = SCREEN_W - 64;
@@ -98,27 +99,13 @@ function LineChart({ values, color, gradientId, labels, showDots = true }: LineC
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function calcStreak(logs: DailyLog[]): number {
-  if (!logs.length) return 0;
-  let streak = 0;
-  let current = new Date().toISOString().split('T')[0];
-  for (const log of logs) {
-    if (log.date === current) {
-      streak++;
-      const d = new Date(current); d.setDate(d.getDate() - 1);
-      current = d.toISOString().split('T')[0];
-    } else break;
-  }
-  return streak;
-}
-
 function avg(arr: number[]): number {
   if (!arr.length) return 0;
   return Math.round((arr.reduce((s, v) => s + v, 0) / arr.length) * 10) / 10;
 }
 
 function dayLabel(dateStr: string, period: Period, locale: string): string {
-  const d = new Date(dateStr);
+  const d = parseLocalDate(dateStr);
   if (period <= 7) return d.toLocaleDateString(locale, { weekday: 'short' }).slice(0, 2);
   return `${d.getDate()}/${d.getMonth() + 1}`;
 }
@@ -161,7 +148,7 @@ function MonthCalendar({ logs, colors, locale }: { logs: DailyLog[]; colors: any
   const firstDay = new Date(year, month, 1);
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const logDates = useMemo(() => new Set(logs.map(l => l.date)), [logs]);
-  const todayStr = today.toISOString().split('T')[0];
+  const todayStr = localDateStr(today);
 
   const startDow = (firstDay.getDay() + 6) % 7; // 0=Lun
   const cells: ({ day: number; dateStr: string; hasLog: boolean; isToday: boolean } | null)[] = [];

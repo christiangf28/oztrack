@@ -76,6 +76,24 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Cap por mensaje: acota el costo por request ante clientes modificados.
+const MAX_CONTENT_CHARS = 4000;
+
+// La respuesta se guarda y devuelve ya sin markdown (el prompt lo prohíbe,
+// esto es la red de seguridad). Así el historial en DB coincide con lo que
+// el usuario vio en pantalla.
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/\*(.*?)\*/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^[-*]\s/gm, '• ')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/^---+$/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
@@ -91,6 +109,20 @@ Deno.serve(async (req: Request) => {
     const language = lang === 'es' ? 'es' : 'en';
     if (!Array.isArray(messages) || messages.length === 0) {
       return new Response(JSON.stringify({ error: 'messages required' }), {
+        status: 400, headers: { ...corsHeaders, 'content-type': 'application/json' },
+      });
+    }
+
+    // Validación de forma y tamaño: roles conocidos, content string acotado.
+    const wellFormed = messages.every((m: { role?: unknown; content?: unknown }) =>
+      (m.role === 'user' || m.role === 'assistant') &&
+      typeof m.content === 'string' &&
+      m.content.length > 0 &&
+      m.content.length <= MAX_CONTENT_CHARS
+    );
+    const lastMessage = messages[messages.length - 1];
+    if (!wellFormed || lastMessage.role !== 'user') {
+      return new Response(JSON.stringify({ error: 'invalid messages' }), {
         status: 400, headers: { ...corsHeaders, 'content-type': 'application/json' },
       });
     }
@@ -121,6 +153,19 @@ Deno.serve(async (req: Request) => {
     if ((count ?? 0) >= DAILY_LIMIT) {
       return new Response(JSON.stringify({ error: 'daily_limit_reached' }), {
         status: 429, headers: { ...corsHeaders, 'content-type': 'application/json' },
+      });
+    }
+
+    // El servidor persiste el mensaje del usuario ANTES de llamar a Anthropic:
+    // así el rate limit cuenta filas que el cliente no controla, y una llamada
+    // fallida igual consume cuota (anti-abuso). El cliente ya no inserta nada.
+    const { error: userInsertErr } = await supabase
+      .from('chat_messages')
+      .insert({ user_id: user.id, role: 'user', content: lastMessage.content });
+    if (userInsertErr) {
+      console.error('user message insert failed', userInsertErr);
+      return new Response(JSON.stringify({ error: 'Internal error' }), {
+        status: 500, headers: { ...corsHeaders, 'content-type': 'application/json' },
       });
     }
 
@@ -160,7 +205,16 @@ Deno.serve(async (req: Request) => {
 
     const data = await anthropicRes.json();
     const first = data.content?.[0];
-    const content = first?.type === 'text' ? first.text : '';
+    const content = first?.type === 'text' ? stripMarkdown(first.text) : '';
+
+    // Persistir la respuesta; si falla, igual la devolvemos (el usuario la ve,
+    // solo se pierde del historial) y lo dejamos registrado.
+    if (content) {
+      const { error: aiInsertErr } = await supabase
+        .from('chat_messages')
+        .insert({ user_id: user.id, role: 'assistant', content });
+      if (aiInsertErr) console.error('assistant message insert failed', aiInsertErr);
+    }
 
     return new Response(JSON.stringify({ content }), {
       status: 200, headers: { ...corsHeaders, 'content-type': 'application/json' },

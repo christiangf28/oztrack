@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -48,12 +48,18 @@ export default function ValueScreen() {
     await persistQuiz();
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
-      await saveProfileFromQuiz(session.user.id, session.user.email ?? '');
+      const profileError = await saveProfileFromQuiz(session.user.id, session.user.email ?? '');
+      setLoading(false);
+      if (profileError) {
+        // Sin perfil no se puede avanzar; el usuario reintenta desde acá.
+        Alert.alert(t('common.error'), t('common.tryAgain'));
+        return;
+      }
       router.replace('/paywall');
     } else {
       router.replace('/(auth)/register');
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   const heroColors = isDark

@@ -10,6 +10,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/lib/supabase';
+import { localDateStr } from '@/lib/dates';
 import { useAuth } from '@/hooks/useAuth';
 import { useGender, g } from '@/hooks/useGender';
 import { useTheme } from '@/components/ui/ThemeContext';
@@ -41,11 +42,34 @@ export default function TrackScreen() {
   const [mealNotes, setMealNotes] = useState('');
   const [bowelCount, setBowelCount] = useState(0);
   const [bowelEnabled, setBowelEnabled] = useState(false);
+  // Fecha del log ya cargado en el formulario; evita recargar (y pisar
+  // ediciones en curso) al cambiar de tab, pero recarga si cambió el día.
+  const [loadedDate, setLoadedDate] = useState<string | null>(null);
 
   useFocusEffect(
     useCallback(() => {
       AsyncStorage.getItem(BOWEL_KEY).then(v => setBowelEnabled(v === 'true'));
-    }, [])
+
+      const today = localDateStr();
+      if (!user || loadedDate === today) return;
+      supabase
+        .from('daily_logs')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('date', today)
+        .maybeSingle()
+        .then(({ data }) => {
+          setLoadedDate(today);
+          if (!data) return;
+          setScores({ nausea: data.nausea, fatigue: data.fatigue, mood: data.mood });
+          if (data.appetite === 1 || data.appetite === 3 || data.appetite === 5) setAppetite(data.appetite);
+          setWeight(data.weight ? String(Math.round(data.weight * 10) / 10) : '');
+          setWeightUnit('kg');
+          setWaterTotal(data.water_ml ?? 0);
+          setMealNotes(data.meal_notes ?? '');
+          setBowelCount(data.bowel_movements ?? 0);
+        });
+    }, [user, loadedDate])
   );
 
   const gender = useGender();
@@ -82,11 +106,11 @@ export default function TrackScreen() {
   async function handleSave() {
     if (!user) return;
     setSaving(true);
-    const today = new Date().toISOString().split('T')[0];
-    const weightKg = weight
-      ? weightUnit === 'lb'
-        ? parseFloat(weight) / 2.205
-        : parseFloat(weight)
+    const today = localDateStr();
+    // Teclados decimales de Android pueden emitir coma ("80,5").
+    const weightNum = parseFloat(weight.replace(',', '.'));
+    const weightKg = weight && !isNaN(weightNum)
+      ? weightUnit === 'lb' ? weightNum / 2.205 : weightNum
       : null;
 
     const { error } = await supabase.from('daily_logs').upsert({
