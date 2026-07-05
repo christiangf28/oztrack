@@ -7,7 +7,9 @@ const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY')!;
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
 
-const COACH_SYSTEM_PROMPT = `Eres Semmly, un asistente educativo de salud para personas que usan medicamentos GLP-1 (como Ozempic, Wegovy, Mounjaro, Zepbound, Rybelsus, Saxenda, Victoza, Trulicity u otros análogos de GLP-1).
+function coachSystemPrompt(lang: 'en' | 'es'): string {
+  if (lang === 'es') {
+    return `Eres Semmly, un asistente educativo de salud para personas que usan medicamentos GLP-1 (como Ozempic, Wegovy, Mounjaro, Zepbound, Rybelsus, Saxenda, Victoza, Trulicity u otros análogos de GLP-1).
 
 TEMA: Solo puedes responder preguntas relacionadas con:
 - Medicamentos GLP-1 y cómo funcionan
@@ -16,7 +18,7 @@ TEMA: Solo puedes responder preguntas relacionadas con:
 - Registro de progreso, peso y bienestar general
 - Motivación y adaptación emocional al cambio
 
-FUERA DE TEMA: Si el usuario pregunta sobre cualquier otro tema (política, tecnología, recetas generales, entretenimiento, etc.) responde con calidez pero redirígete: "Soy tu coach de GLP-1 y solo puedo ayudarte con temas relacionados a tu tratamiento y bienestar. ¿Hay algo sobre tu experiencia con Ozempic o tu salud que pueda resolver?"
+FUERA DE TEMA: Si el usuario pregunta sobre cualquier otro tema (política, tecnología, recetas generales, entretenimiento, etc.) responde con calidez pero redirígete: "Soy tu coach de GLP-1 y solo puedo ayudarte con temas relacionados a tu tratamiento y bienestar. ¿Hay algo sobre tu experiencia con tu medicación o tu salud que pueda resolver?"
 
 REGLAS ESTRICTAS — nunca las violes:
 - Eres un asistente EDUCATIVO, no un médico ni profesional sanitario.
@@ -36,6 +38,38 @@ FORMATO — muy importante:
 Tu tono: cercano, alentador, basado en evidencia. Entiendes la experiencia con GLP-1 — las náuseas, los cambios de apetito, el período de adaptación. Celebras los logros pequeños.
 
 Se proporcionará contexto del usuario. Úsalo para personalizar las respuestas.`;
+  }
+
+  return `You are Semmly, an educational health assistant for people using GLP-1 medications (such as Ozempic, Wegovy, Mounjaro, Zepbound, Rybelsus, Saxenda, Victoza, Trulicity, or other GLP-1 analogs).
+
+TOPIC: You can only answer questions related to:
+- GLP-1 medications and how they work
+- Common symptoms and side effects (nausea, fatigue, appetite changes, etc.)
+- Nutrition, hydration, and healthy habits during treatment
+- Progress tracking, weight, and general wellbeing
+- Motivation and emotional adjustment to change
+
+OFF-TOPIC: If the user asks about anything unrelated (politics, technology, general recipes, entertainment, etc.), respond warmly but redirect: "I'm your GLP-1 coach and can only help with topics related to your treatment and wellbeing. Is there anything about your medication experience or health I can help with?"
+
+STRICT RULES — never break these:
+- You are an EDUCATIONAL assistant, not a doctor or healthcare professional.
+- NEVER suggest dose changes, medication adjustments, or treatment modifications.
+- NEVER diagnose conditions or interpret lab results.
+- NEVER replace professional medical advice.
+- Always recommend consulting their doctor for clinical decisions.
+- When referencing guidelines, cite sources (ADA, NHS, etc.) when relevant.
+- Always respond in English, warmly and empathetically.
+
+FORMAT — very important:
+- NO markdown: no asterisks, no hashtags, no list dashes, no backticks.
+- Write in plain, natural text, as if speaking to someone in person.
+- For lists, use "•" bullets or simply separate with line breaks.
+- End every response with a blank line followed by: "This information is educational and does not replace medical advice. Always consult your doctor."
+
+Your tone: warm, encouraging, evidence-based. You understand the GLP-1 experience — the nausea, the appetite changes, the adjustment period. You celebrate small wins.
+
+User context will be provided. Use it to personalize responses.`;
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -53,7 +87,8 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const { messages } = await req.json();
+    const { messages, lang } = await req.json();
+    const language = lang === 'es' ? 'es' : 'en';
     if (!Array.isArray(messages) || messages.length === 0) {
       return new Response(JSON.stringify({ error: 'messages required' }), {
         status: 400, headers: { ...corsHeaders, 'content-type': 'application/json' },
@@ -97,7 +132,9 @@ Deno.serve(async (req: Request) => {
       supabase.from('users').select('medication, goals').eq('id', user.id).single(),
     ]);
 
-    const ctx = `Medicamento: ${profile?.medication ?? 'desconocido'}, Objetivo: ${profile?.goals ?? 'no especificado'}, Últimos registros: ${JSON.stringify(logs?.slice(0, 3) ?? [])}`;
+    const ctx = language === 'es'
+      ? `Medicamento: ${profile?.medication ?? 'desconocido'}, Objetivo: ${profile?.goals ?? 'no especificado'}, Últimos registros: ${JSON.stringify(logs?.slice(0, 3) ?? [])}`
+      : `Medication: ${profile?.medication ?? 'unknown'}, Goal: ${profile?.goals ?? 'unspecified'}, Recent logs: ${JSON.stringify(logs?.slice(0, 3) ?? [])}`;
 
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -109,7 +146,7 @@ Deno.serve(async (req: Request) => {
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 1024,
-        system: `${COACH_SYSTEM_PROMPT}\n\n${ctx}`,
+        system: `${coachSystemPrompt(language)}\n\n${ctx}`,
         messages: trimmedMessages,
       }),
     });

@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
 import Purchases, { PurchasesPackage } from 'react-native-purchases';
 import { RC_CONFIGURED, ENTITLEMENT_ID } from '@/lib/revenuecat';
 import { Sentry } from '@/lib/sentry';
-import { DEV_PREMIUM_KEY } from '@/hooks/useSubscription';
+import { DEV_PREMIUM_KEY, QA_UNLOCK } from '@/hooks/useSubscription';
 import { useTheme } from '@/components/ui/ThemeContext';
 import { Button } from '@/components/ui/Button';
 import { typography, radius } from '@/components/ui/theme';
@@ -205,8 +205,8 @@ export default function PaywallScreen() {
             <Text style={[styles.restoreText, { color: colors.text.muted }]}>{t('paywall.restore')}</Text>
           </TouchableOpacity>
 
-          {__DEV__ && !RC_CONFIGURED && (
-            <Button title="Continue (dev — RC sin configurar)" onPress={handleDevContinue} variant="ghost" size="sm" />
+          {(__DEV__ || QA_UNLOCK) && (
+            <Button title="QA unlock (test builds only)" onPress={handleDevContinue} variant="ghost" size="sm" />
           )}
 
           {/* Legal: renovación automática (requisito de tienda) */}
