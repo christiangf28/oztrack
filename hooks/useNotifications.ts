@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
+import i18n from '@/i18n';
 
 const PREFS_KEY = 'oztrack_notif_prefs';
 const DAILY_ID = 'oztrack_daily';
@@ -67,12 +68,14 @@ export async function saveAndSchedule(prefs: NotifPrefs): Promise<void> {
   await Notifications.cancelScheduledNotificationAsync(INJECTION_ID).catch(() => {});
   await Notifications.cancelScheduledNotificationAsync(WEEKLY_SUMMARY_ID).catch(() => {});
 
+  // El texto queda congelado en el idioma vigente al programar; si el usuario
+  // cambia de idioma, se actualiza la próxima vez que guarde recordatorios.
   if (prefs.dailyEnabled) {
     await Notifications.scheduleNotificationAsync({
       identifier: DAILY_ID,
       content: {
-        title: '¿Cómo te sientes hoy? 🌸',
-        body: 'Registra tus síntomas y mantén tu racha activa.',
+        title: i18n.t('notifications.push.dailyTitle'),
+        body: i18n.t('notifications.push.dailyBody'),
         sound: true,
       },
       trigger: {
@@ -87,8 +90,8 @@ export async function saveAndSchedule(prefs: NotifPrefs): Promise<void> {
     await Notifications.scheduleNotificationAsync({
       identifier: INJECTION_ID,
       content: {
-        title: '💉 Hoy es tu día de dosis',
-        body: 'Recuerda aplicar tu medicación GLP-1 y registrarlo.',
+        title: i18n.t('notifications.push.injectionTitle'),
+        body: i18n.t('notifications.push.injectionBody'),
         sound: true,
       },
       trigger: {
@@ -104,8 +107,8 @@ export async function saveAndSchedule(prefs: NotifPrefs): Promise<void> {
     await Notifications.scheduleNotificationAsync({
       identifier: WEEKLY_SUMMARY_ID,
       content: {
-        title: '📊 Tu resumen semanal está listo',
-        body: 'Revisa cómo fue tu semana y celebra tu progreso.',
+        title: i18n.t('notifications.push.weeklyTitle'),
+        body: i18n.t('notifications.push.weeklyBody'),
         sound: true,
       },
       trigger: {

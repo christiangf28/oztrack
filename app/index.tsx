@@ -5,12 +5,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/lib/supabase';
 import { loadQuiz } from '@/lib/quiz';
-import { colors } from '@/components/ui/colors';
+import { useTheme } from '@/components/ui/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const WELCOME_SHOWN_KEY = 'oztrack_welcome_shown';
 
 export default function Index() {
+  const { colors } = useTheme();
   const { session, loading } = useAuth();
   const { isPremium, loading: subLoading } = useSubscription();
   const [onboarded, setOnboarded] = useState<boolean | null>(null);

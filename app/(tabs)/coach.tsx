@@ -7,7 +7,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { askCoach, CoachDailyLimitError } from '@/lib/anthropic';
@@ -38,11 +38,15 @@ export default function CoachScreen() {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const { user } = useAuth();
-  const { isPremium, loading: subLoading } = useSubscription();
+  const { isPremium, loading: subLoading, refresh: refreshSub } = useSubscription();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [thinking, setThinking] = useState(false);
   const listRef = useRef<FlatList>(null);
+
+  // Re-chequear al volver al tab: cubre compras hechas desde el paywall
+  // (y el QA unlock) sin esperar a remontar la pantalla.
+  useFocusEffect(useCallback(() => { refreshSub(); }, [refreshSub]));
 
   const SUGGESTIONS = [
     t('coach.suggestion1'),

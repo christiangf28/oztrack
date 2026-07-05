@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useCallback, useState, useMemo } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, ActivityIndicator,
   TouchableOpacity, Dimensions, Share,
@@ -6,7 +6,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import Svg, { Path, Circle, Defs, LinearGradient as SvgGradient, Stop, Line, Text as SvgText } from 'react-native-svg';
 import { supabase } from '@/lib/supabase';
@@ -110,29 +110,29 @@ function dayLabel(dateStr: string, period: Period, locale: string): string {
   return `${d.getDate()}/${d.getMonth() + 1}`;
 }
 
-function generateInsights(logs: DailyLog[], colors: any) {
-  if (logs.length < 4) return [{ icon: '📝', text: 'Sigue registrando para generar perspectivas.', color: colors.primary }];
+function generateInsights(logs: DailyLog[], colors: any, t: (key: string) => string) {
+  if (logs.length < 4) return [{ icon: '📝', text: t('insights.keepLogging'), color: colors.primary }];
   const results: { icon: string; text: string; color: string }[] = [];
   const recent = logs.slice(0, 7);
 
   const avgNausea = avg(recent.map(l => l.nausea));
-  if (avgNausea < 2.5) results.push({ icon: '✅', text: 'Tus náuseas han sido bajas esta semana — señal de buena adaptación.', color: colors.success });
+  if (avgNausea < 2.5) results.push({ icon: '✅', text: t('insights.lowNausea'), color: colors.success });
 
   const highWater = logs.filter(l => l.water_ml >= 2000);
   if (highWater.length > 0) {
     const lowNausea = highWater.filter(l => l.nausea <= 2).length / highWater.length;
-    if (lowNausea > 0.6) results.push({ icon: '💧', text: 'Las náuseas fueron más bajas los días que bebiste más agua.', color: '#5BA8D0' });
+    if (lowNausea > 0.6) results.push({ icon: '💧', text: t('insights.waterHelps'), color: '#5BA8D0' });
   }
 
   const avgFatigue = avg(recent.map(l => l.fatigue));
-  if (avgFatigue <= 2.5) results.push({ icon: '⚡', text: 'Tu nivel de fatiga ha sido bajo esta semana. ¡Excelente!', color: colors.symptom.fatigue });
+  if (avgFatigue <= 2.5) results.push({ icon: '⚡', text: t('insights.lowFatigue'), color: colors.symptom.fatigue });
 
   const moodTrend = recent.length >= 4
     ? avg(recent.slice(0, 3).map(l => l.mood)) - avg(recent.slice(-3).map(l => l.mood))
     : 0;
-  if (moodTrend > 0.5) results.push({ icon: '📈', text: 'Tu estado de ánimo ha mejorado en los últimos días.', color: colors.symptom.mood });
+  if (moodTrend > 0.5) results.push({ icon: '📈', text: t('insights.moodUp'), color: colors.symptom.mood });
 
-  return results.length ? results : [{ icon: '📈', text: 'Sigue registrando para generar más perspectivas personalizadas.', color: colors.primary }];
+  return results.length ? results : [{ icon: '📈', text: t('insights.keepLoggingMore'), color: colors.primary }];
 }
 
 // ─── Month Calendar ───────────────────────────────────────────────────────────
@@ -242,9 +242,9 @@ function AchievementsGrid({ logs, colors }: { logs: DailyLog[]; colors: any }) {
             )}
             <Text style={styles.achieveEmoji}>{a.emoji}</Text>
             <Text style={[styles.achieveTitle, { color: a.unlocked ? colors.text.primary : colors.text.muted }]}>
-              {a.title}
+              {t(`achievements.${a.id}.title`)}
             </Text>
-            <Text style={[styles.achieveDesc, { color: colors.text.muted }]}>{a.desc}</Text>
+            <Text style={[styles.achieveDesc, { color: colors.text.muted }]}>{t(`achievements.${a.id}.desc`)}</Text>
           </View>
         ))}
       </View>
@@ -258,26 +258,31 @@ export default function ProgressScreen() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language.startsWith('es') ? 'es-ES' : 'en-US';
   const { user } = useAuth();
-  const { isPremium } = useSubscription();
+  const { isPremium, refresh: refreshSub } = useSubscription();
   const { colors, isDark } = useTheme();
   const [logs, setLogs] = useState<DailyLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<Period>(7);
 
-  useEffect(() => {
-    if (!user) return;
-    supabase.from('daily_logs').select('*')
-      .eq('user_id', user.id)
-      .order('date', { ascending: false }).limit(365)
-      .then(({ data }) => {
-        if (data) setLogs(data as DailyLog[]);
-        setLoading(false);
-      });
-  }, [user]);
+  // Recargar al enfocar el tab: un log recién guardado en Track aparece acá
+  // sin reiniciar la app. También re-chequea la suscripción (compra reciente).
+  useFocusEffect(
+    useCallback(() => {
+      refreshSub();
+      if (!user) return;
+      supabase.from('daily_logs').select('*')
+        .eq('user_id', user.id)
+        .order('date', { ascending: false }).limit(365)
+        .then(({ data }) => {
+          if (data) setLogs(data as DailyLog[]);
+          setLoading(false);
+        });
+    }, [user, refreshSub])
+  );
 
   const periodLogs = useMemo(() => logs.slice(0, period).reverse(), [logs, period]);
   const streak = useMemo(() => calcStreak(logs), [logs]);
-  const insights = useMemo(() => generateInsights(logs, colors), [logs, colors]);
+  const insights = useMemo(() => generateInsights(logs, colors, t), [logs, colors, t]);
 
   const weightLogs = useMemo(() => periodLogs.filter(l => l.weight != null && l.weight! > 0), [periodLogs]);
   const weightDelta = weightLogs.length >= 2
