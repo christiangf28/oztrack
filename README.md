@@ -25,8 +25,8 @@ Mobile app for people managing weight loss or diabetes on GLP-1 medications (Oze
 ## Getting Started
 
 ```bash
-git clone https://github.com/christiangf28/oztrack.git
-cd oztrack
+git clone https://github.com/christiangf28/milli.git
+cd milli
 npm install
 npx expo start
 ```
