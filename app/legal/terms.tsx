@@ -2,29 +2,31 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/components/ui/ThemeContext';
 
 export default function TermsScreen() {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
       <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
         </TouchableOpacity>
-        <Text style={[styles.title, { color: colors.text.primary }]}>Términos de Servicio</Text>
+        <Text style={[styles.title, { color: colors.text.primary }]}>{t('legal.terms.title')}</Text>
         <View style={{ width: 24 }} />
       </View>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.updated, { color: colors.text.muted }]}>Última actualización: mayo 2026</Text>
+        <Text style={[styles.updated, { color: colors.text.muted }]}>{t('legal.terms.updated')}</Text>
         <View style={styles.disclaimer}>
-          <Text style={styles.disclaimerText}>⚠️ Semmly es una herramienta informativa. No proporciona consejo médico, diagnóstico ni tratamiento. Consulta siempre a un profesional de salud cualificado.</Text>
+          <Text style={styles.disclaimerText}>{t('legal.terms.disclaimer')}</Text>
         </View>
-        <Section title="1. Aceptación" colors={colors}>Al usar Semmly aceptas estos términos. Si no estás de acuerdo, no uses la app.</Section>
-        <Section title="2. No es consejo médico" colors={colors}>Semmly y su Coach IA proporcionan información educativa únicamente. Nada en la app constituye consejo médico. Nunca ignores el consejo médico profesional basándote en información de esta app.</Section>
-        <Section title="3. Suscripciones" colors={colors}>Las funciones Premium están disponibles con suscripción mensual ($9.99) o anual ($59.99) con 7 días de prueba gratuita. Las suscripciones se renuevan automáticamente y pueden cancelarse en cualquier momento.</Section>
-        <Section title="4. Uso aceptable" colors={colors}>Aceptas no usar Semmly para ningún fin ilegal ni intentar revertir la ingeniería o abusar del servicio.</Section>
-        <Section title="5. Contacto" colors={colors}>support@getsemmly.app</Section>
+        <Section title={t('legal.terms.acceptanceTitle')} colors={colors}>{t('legal.terms.acceptanceBody')}</Section>
+        <Section title={t('legal.terms.noMedicalAdviceTitle')} colors={colors}>{t('legal.terms.noMedicalAdviceBody')}</Section>
+        <Section title={t('legal.terms.subscriptionsTitle')} colors={colors}>{t('legal.terms.subscriptionsBody')}</Section>
+        <Section title={t('legal.terms.acceptableUseTitle')} colors={colors}>{t('legal.terms.acceptableUseBody')}</Section>
+        <Section title={t('legal.terms.contactTitle')} colors={colors}>{t('legal.terms.contactBody')}</Section>
       </ScrollView>
     </SafeAreaView>
   );

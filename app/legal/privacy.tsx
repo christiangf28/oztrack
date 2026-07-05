@@ -2,35 +2,37 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/components/ui/ThemeContext';
 
 export default function PrivacyScreen() {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
       <View style={[styles.header, { borderBottomColor: colors.borderLight }]}>
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
         </TouchableOpacity>
-        <Text style={[styles.title, { color: colors.text.primary }]}>Política de Privacidad</Text>
+        <Text style={[styles.title, { color: colors.text.primary }]}>{t('legal.privacy.title')}</Text>
         <View style={{ width: 24 }} />
       </View>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.updated, { color: colors.text.muted }]}>Última actualización: mayo 2026</Text>
-        <Section title="Qué recopilamos" colors={colors}>
-          Semmly recopila tu correo electrónico y datos de salud autoinformados: puntuaciones de síntomas, peso (opcional), ingesta de agua y notas de comidas. NO recopilamos datos clínicos como dosis de medicación, resultados de laboratorio o recetas.
+        <Text style={[styles.updated, { color: colors.text.muted }]}>{t('legal.privacy.updated')}</Text>
+        <Section title={t('legal.privacy.whatWeCollectTitle')} colors={colors}>
+          {t('legal.privacy.whatWeCollectBody')}
         </Section>
-        <Section title="Cómo usamos tus datos" colors={colors}>
-          Tus datos se usan exclusivamente para proveer el servicio de Semmly, incluyendo el análisis de tendencias de síntomas y el coaching de IA. No vendemos tus datos a terceros.
+        <Section title={t('legal.privacy.howWeUseTitle')} colors={colors}>
+          {t('legal.privacy.howWeUseBody')}
         </Section>
-        <Section title="Coach IA" colors={colors}>
-          Los mensajes enviados al Coach de IA son procesados por la API Claude de Anthropic. Los mensajes se guardan en nuestra base de datos para mantener el historial de conversación. No usamos tus mensajes para entrenar modelos de IA.
+        <Section title={t('legal.privacy.aiCoachTitle')} colors={colors}>
+          {t('legal.privacy.aiCoachBody')}
         </Section>
-        <Section title="Retención de datos" colors={colors}>
-          Puedes eliminar tu cuenta y todos los datos asociados en cualquier momento desde la sección Perfil → "Eliminar mi cuenta y datos". Los datos se eliminan de forma permanente e inmediata. También puedes contactarnos en privacy@getsemmly.app.
+        <Section title={t('legal.privacy.retentionTitle')} colors={colors}>
+          {t('legal.privacy.retentionBody')}
         </Section>
-        <Section title="Contacto" colors={colors}>
-          Para consultas de privacidad, contacta: privacy@getsemmly.app
+        <Section title={t('legal.privacy.contactTitle')} colors={colors}>
+          {t('legal.privacy.contactBody')}
         </Section>
       </ScrollView>
     </SafeAreaView>
