@@ -1,7 +1,9 @@
 import Purchases, { LOG_LEVEL } from 'react-native-purchases';
 import { Platform } from 'react-native';
 
-export const ENTITLEMENT_ID = 'premium';
+// Identifier EXACTO del entitlement en el dashboard de RevenueCat (legado del
+// nombre "Milli"; no renombrable en RC y no visible al usuario).
+export const ENTITLEMENT_ID = 'Milli Pro';
 
 const apiKey =
   Platform.OS === 'ios'
