@@ -298,7 +298,7 @@ export default {
     deleteConfirmBtn: 'Eliminar',
     deleteFinalBtn: 'Sí, eliminar todo',
     deleteError: 'No se pudo eliminar la cuenta. Escríbenos a privacy@getsemmly.app',
-    versionFooter: 'Semmly v1.0 · hecho con 🌸',
+    versionFooter: 'Semmly v2.0 · hecho con 🌸',
     editPhotoTitle: 'Foto de perfil',
     editMedicationTitle: 'Medicamento',
     editGoalTitle: 'Objetivo',

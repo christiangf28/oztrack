@@ -2,7 +2,7 @@
   "expo": {
     "name": "Semmly",
     "slug": "oztrack",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "semmly",
@@ -22,7 +22,7 @@
         "backgroundColor": "#FBF7F5"
       },
       "package": "com.getmilli.app",
-      "versionCode": 1,
+      "versionCode": 2,
       "permissions": [
         "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.VIBRATE",

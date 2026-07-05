@@ -305,7 +305,7 @@ export default {
     deleteConfirmBtn: 'Delete',
     deleteFinalBtn: 'Yes, delete everything',
     deleteError: 'We could not delete your account. Write to us at privacy@getsemmly.app',
-    versionFooter: 'Semmly v1.0 · made with 🌸',
+    versionFooter: 'Semmly v2.0 · made with 🌸',
     editPhotoTitle: 'Profile Photo',
     editMedicationTitle: 'Medication',
     editGoalTitle: 'Goal',
