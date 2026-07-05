@@ -136,9 +136,8 @@ export default function ProfileScreen() {
                 onPress: async () => {
                   try {
                     if (!user) return;
-                    await supabase.from('daily_logs').delete().eq('user_id', user.id);
-                    await supabase.from('users').delete().eq('id', user.id);
-                    await supabase.rpc('delete_user');
+                    const { error } = await supabase.rpc('delete_user');
+                    if (error) throw error;
                     await AsyncStorage.clear();
                     router.replace('/welcome');
                   } catch {
