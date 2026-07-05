@@ -5,8 +5,9 @@ import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, useTheme } from '@/components/ui/ThemeContext';
-import { initRevenueCat } from '@/lib/revenuecat';
+import { initRevenueCat, logInRevenueCat } from '@/lib/revenuecat';
 import { initSentry, Sentry } from '@/lib/sentry';
+import { supabase } from '@/lib/supabase';
 import '@/i18n';
 
 SplashScreen.preventAutoHideAsync();
@@ -18,6 +19,14 @@ function AppRoot() {
   useEffect(() => {
     initRevenueCat();
     SplashScreen.hideAsync();
+    // Vincula el usuario de Supabase con RevenueCat en cada inicio de sesión
+    // (login, registro o sesión restaurada al arrancar). Antes solo el flujo
+    // de registro linkeaba: logins quedaban con ID anónimo en RC y los
+    // entitlements promocionales por user ID nunca llegaban al dispositivo.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) logInRevenueCat(session.user.id);
+    });
+    return () => subscription.unsubscribe();
   }, []);
 
   return (
