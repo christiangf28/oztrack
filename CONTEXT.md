@@ -1,10 +1,31 @@
-# Semmly — Session Log & Project Context
+# Semmly (ex-Milli, ex-Oztrack) — Session Log & Project Context
 
 ## App Overview
-GLP-1 medication companion app (Ozempic, Wegovy, Mounjaro, Zepbound, Saxenda, Trulicity, compounded, etc.)
+GLP-1 medication companion app (Ozempic, Wegovy, Mounjaro, Zepbound, Rybelsus, Saxenda, Victoza, Trulicity, compounded, etc.)
 **Target:** People managing weight loss or diabetes on GLP-1s — mercado global en inglés, lanzamiento **Android/Play Store first**
 **Monetization:** HARD PAYWALL (decidido 2026-07-04, basado en RevenueCat State of Subscription Apps 2026) — sin suscripción no hay acceso. Monthly $9.99 / Annual $59.99 preseleccionado con trial de 7 días solo en anual.
-**Flujo:** welcome → quiz pre-auth (7 pasos) → value screen → registro → paywall bloqueante → app
+**Flujo:** welcome → quiz pre-auth (6 pasos) → value screen → registro → paywall bloqueante → app
+**Nombre**: repo GitHub `christiangf28/semmly`, pero el package Android es `com.getmilli.app` (intencional — no se puede cambiar tras crear la app en Play Console, ver CHANGELOG 2026-07-05(b)).
+
+---
+
+## Estado actual (al cerrar sesión 2026-07-05)
+
+**Código**: rama `main`, working tree limpio, todo pusheado. Último commit `baa68d3`.
+**i18n**: conversión completa a EN/ES en todas las pantallas (tabs, onboarding, auth, track/coach/progress/profile). Selector manual de idioma en Perfil → Ajustes. Pendiente menor: texto generado dinámicamente en `generateInsights()` (progress.tsx) y `useAchievements.ts` sigue en español.
+**Build de referencia**: perfil `preview` de EAS, build ID `dc8b0248-0c90-450e-a2dc-08791edfe8a5` (lanzado al cerrar esta sesión — verificar si terminó con `npx eas build:view dc8b0248-0c90-450e-a2dc-08791edfe8a5`).
+**Play Console**: app creada (package `com.getmilli.app`, nombre visible "Semmly"), content rating + data safety + público objetivo completados. Suscripción `premium` con planes `monthly` ($9.99) y `annual` ($59.99 + trial 7 días) — falta confirmar que la oferta del anual quedó guardada y todo en estado "Activo".
+**RevenueCat**: bug real corregido — faltaba `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY` en el entorno "preview" de EAS (solo estaba en "production"), por eso nunca aparecía ningún customer. Ya corregido en ambos entornos. Falta: crear el Offering espejo de los planes de Play Console, y otorgar `premium` a la cuenta de prueba del reviewer.
+**Cuenta de prueba (reviewer de Google)**: `christiangf28+milli-review@gmail.com` / `MilliReview2026!`, Supabase user ID `162b866f-89bb-4e70-965c-c085af684fa7`.
+**QA unlock**: botón temporal en el paywall (`EXPO_PUBLIC_QA_UNLOCK`, solo entorno preview) para bypasear el hard paywall en testing sin RevenueCat real. **Sacarlo antes del build para los 12 testers.**
+**Pendiente del usuario**: confirmar si habilitó Cloud Pub/Sub API en Google Cloud (lo pedimos, no confirmado).
+
+### Cómo retomar
+1. Verificar build `dc8b0248...`, descargar/instalar APK en emulador o teléfono.
+2. Recorrer onboarding, tocar "QA unlock" en paywall, sacar 4-6 screenshots reales en inglés para Play Store.
+3. Terminar Play Console (oferta del plan anual) + crear Offering en RevenueCat.
+4. Cuando haya productos reales, otorgar `premium` a la cuenta de prueba en RevenueCat dashboard.
+5. Ver CHANGELOG.md → entrada "2026-07-05 (c)" para el detalle completo de esta sesión.
 
 ---
 
@@ -63,53 +84,23 @@ GLP-1 medication companion app (Ozempic, Wegovy, Mounjaro, Zepbound, Saxenda, Tr
 
 ---
 
-## Session History
+## Historial resumido
+Detalle completo de cada sesión en CHANGELOG.md — acá solo el resumen de una línea por hito, para no duplicar.
 
-### Session actual — 2026-07-04 (Fase 1: Monetización)
-Ver CHANGELOG.md para el detalle. Resumen:
-- [x] Auditoría Fase 0 completa (deuda crítica identificada: API key Anthropic en cliente, copy ES hardcodeado, bypass premium, delete_user RPC faltante)
-- [x] Quiz pre-auth + pantalla struggles + value screen (i18n EN/ES)
-- [x] Hard paywall (trial solo anual, restore, auto-renew terms, dev bypass solo __DEV__)
-- [x] RevenueCat: init al arrancar + logIn al registrarse (keys Android aún placeholder)
-- [x] Medicamentos ampliados a 10 (semaglutida, tirzepatida, liraglutida, dulaglutida, compuestos)
-- [ ] SIGUIENTE: productos en Play Console + RC dashboard, migración struggles en Supabase, Fase 2 (copy EN, Edge Function proxy, estados vacíos)
-- Decisión: lanzamiento Android-first (Play Store); closed testing 12 testers/14 días — arrancar build interno apenas haya keys RC
-
-### Session 1 — 2026-05-24
-**Goal:** Project bootstrap + diseño visual completo
-- [x] Proyecto Expo inicializado (TypeScript + Expo Router)
-- [x] Todas las dependencias instaladas (981 paquetes)
-- [x] Auth flow completo (login, register con gradientes hero)
-- [x] Onboarding 4 pasos (disclaimer → medicamento → duración → objetivos → síntomas)
-- [x] Tab navigation (Track, Coach, Progress, Profile)
-- [x] Supabase, Anthropic, RevenueCat clients configurados (keys pendientes)
-- [x] **DISEÑO VISUAL COMPLETO** — ver detalles abajo
-
-**Sistema de diseño implementado:**
-- Paleta rosa polvoso + crema cálida + salvia + lavanda
-- Gradientes en hero, botones, cards de streak, coach avatar
-- Sombras suaves (sin bordes duros en la mayoría de elementos)
-- ScoreSlider visual con emojis y barra de progreso animada
-- Tab bar con fondo activo pill-shaped
-- Componentes: Button (gradiente), Input (focus state), Card, Badge, OnboardingLayout
-- Idioma: español en toda la UI (i18n EN+ES completo)
-
-**Keys needed from user:**
-- `EXPO_PUBLIC_SUPABASE_URL`
-- `EXPO_PUBLIC_SUPABASE_ANON_KEY`
-- `ANTHROPIC_API_KEY`
-- RevenueCat API keys (iOS + Android)
+- **2026-05-24**: bootstrap del proyecto (Expo+TS+Router), diseño visual completo (paleta rosa/crema/salvia/lavanda), auth+onboarding+tabs armados, todo en español.
+- **2026-07-04**: pasa a "producto con revenue" — quiz pre-auth + value screen, hard paywall, RevenueCat init, 10 medicamentos, rebrand Oztrack→Milli.
+- **2026-07-05**: rebrand Milli→Semmly (colisión de marca), API key de Anthropic fuera del cliente, Sentry, delete_user implementado, i18n completo EN/ES, fixes de RevenueCat/paywall, Play Console en progreso. Ver "Estado actual" arriba.
 
 ---
 
 ## Milestones
-- [ ] **M1** — Auth + Onboarding complete
-- [ ] **M2** — Daily tracking functional
-- [ ] **M3** — AI Coach live (gated)
-- [ ] **M4** — Progress dashboard + charts
-- [ ] **M5** — Paywall + RevenueCat integrated
-- [ ] **M6** — i18n second language (Spanish target)
-- [ ] **M7** — App Store + Play Store submission
+- [x] **M1** — Auth + Onboarding complete
+- [x] **M2** — Daily tracking functional
+- [x] **M3** — AI Coach live (gated)
+- [x] **M4** — Progress dashboard + charts
+- [x] **M5** — Paywall + RevenueCat integrated (código listo; falta Offering real en RC + oferta anual en Play Console)
+- [x] **M6** — i18n EN/ES completo con selector manual
+- [ ] **M7** — Play Store submission (Play Console en progreso, screenshots pendientes, closed testing 12 testers/14 días no arrancado)
 
 ---
 

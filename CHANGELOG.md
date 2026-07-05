@@ -4,6 +4,46 @@ Todas las fechas en formato YYYY-MM-DD. Idioma del changelog: español (comunica
 
 ## [Unreleased] — Fase 1: Monetización (hard paywall)
 
+### 2026-07-05 (c) — Play Console + RevenueCat en curso, i18n completo, fixes de testing
+
+**Play Console (en progreso, no terminado)**
+- App creada bajo package `com.getmilli.app` (nombre visible ya cambiado a "Semmly" en la ficha).
+- Content rating (IARC), Data Safety, público objetivo 18+, ads=No, ya completados.
+- Suscripción `premium` creada con 2 planes base: `monthly` ($9.99, sin trial) y `annual` ($59.99, con oferta `annual-trial-7d` de 7 días gratis, elegibilidad "nuevos clientes").
+- **Pendiente**: terminar de guardar la oferta del plan anual y activar todo; luego crear el "Offering" espejo en RevenueCat.
+- Cuenta de servicio Google configurada; falta habilitar **Cloud Pub/Sub API** en Google Cloud Console (avisado al usuario, no confirmado si ya lo hizo).
+
+**RevenueCat — bug real encontrado y corregido**
+- El entorno **"preview" de EAS nunca tuvo `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY`** (solo estaba en "production"), por eso el SDK nunca inicializaba en los builds de prueba y no aparecía ningún customer en el dashboard. Corregido: la key ya está en ambos entornos.
+- Cuenta de prueba para el reviewer de Google: `christiangf28+milli-review@gmail.com` / `MilliReview2026!`, Supabase user ID `162b866f-89bb-4e70-965c-c085af684fa7`. Pendiente otorgarle el entitlement `premium` en RevenueCat una vez que el customer aparezca en el dashboard (requiere que un build con la key correcta corra al menos una vez en un dispositivo/emulador con Play Store).
+
+**QA unlock temporal**
+- Se agregó un botón "QA unlock (test builds only)" en el paywall, gateado por `EXPO_PUBLIC_QA_UNLOCK` (solo en entorno "preview" de EAS). Permite saltar el hard paywall en builds de testing sin depender de RevenueCat/Play Billing (los emuladores sin Play Store no soportan bien Play Billing). **IMPORTANTE: remover `EXPO_PUBLIC_QA_UNLOCK` del entorno preview antes de compilar el build que reciban los 12 testers reales** (buscar en `hooks/useSubscription.ts` y `app/paywall.tsx`).
+
+**Coach IA — bug crítico corregido**
+- El system prompt de la Edge Function forzaba "responde siempre en español" sin importar el idioma del usuario. `coachSystemPrompt(lang)` ahora recibe el idioma desde el cliente (`i18n.language`) y responde en inglés por defecto, español si corresponde.
+
+**i18n — conversión completa a inglés/español**
+- Convertidas a `react-i18next` todas las pantallas que quedaban 100% o parcialmente hardcodeadas en español: tabs (`_layout.tsx`), Track, Coach, Profile, Progress (chrome principal), onboarding completo (demographics, duration, goals, symptoms, disclaimer, welcome), login, register.
+- **Selector de idioma real** agregado en Perfil → Ajustes → Idioma (antes mostraba una alerta de "próximamente"). `i18n/index.ts` persiste la elección manual en AsyncStorage (`setAppLanguage()`), pero sigue detectando el idioma del dispositivo por defecto la primera vez.
+- Fix menor: "semmly" en minúscula en el hero de login/register se veía mal en fuente de sistema plana (solo funciona en la tipografía redondeada custom del splash) — cambiado a "Semmly".
+- **Pendiente (no bloqueante)**: `generateInsights()` en `progress.tsx` y los títulos/descripciones de `useAchievements.ts` siguen generando texto en español dinámicamente — no se tradujeron en esta sesión.
+
+**Fix de layout**
+- Paywall: el aviso de renovación automática y los links Terms/Privacy quedaban pegados en la misma línea por un `\n` embebido dentro de un `flexDirection: row` (no empuja a los hermanos a la siguiente línea en RN). Separado en dos filas apiladas.
+- Agregada nota de tranquilidad cerca del CTA: "Cancel anytime during your trial — you won't be charged" (solo visible cuando el plan anual está seleccionado), en inglés y español.
+
+**Testing con emulador Android**
+- Se instaló Android Studio + emulador, y se maneja vía `adb` (instalar APK, `uiautomator dump` para ubicar coordenadas exactas de botones, `screencap` para capturas) para navegar la app sin intervención manual. Nota técnica: usar `MSYS_NO_PATHCONV=1` antes de comandos `adb shell` con rutas tipo `/sdcard/...` en Git Bash de Windows, si no MSYS reescribe la ruta como si fuera de Windows y falla.
+- Build de referencia con todo lo de esta sesión: **build ID `dc8b0248-0c90-450e-a2dc-08791edfe8a5`** (perfil `preview`), lanzado al cerrar la sesión — revisar con `npx eas build:view dc8b0248-0c90-450e-a2dc-08791edfe8a5` si terminó bien.
+
+**Pendiente inmediato al retomar**
+1. Verificar que el build `dc8b0248...` terminó OK, descargar el APK e instalarlo en el emulador (o pedir al usuario que lo haga).
+2. Recorrer el onboarding, tocar "QA unlock" en el paywall, y sacar 4-6 screenshots reales para Play Store (ya en inglés).
+3. Terminar de guardar la oferta del plan anual en Play Console (si no se hizo) y crear el Offering en RevenueCat.
+4. Confirmar si el usuario habilitó Cloud Pub/Sub API.
+5. Una vez que haya subscripciones reales, otorgar `premium` a la cuenta de prueba del reviewer en RevenueCat.
+
 ### 2026-07-05 (b) — Rebrand: Milli → Semmly
 
 **Decisión**: "Milli" descartado tras verificar colisiones reales — existe "Milli" (co.genvis.milli) app de wellness/juegos de palabras en ambas tiendas, y más grave, **millihealth.com** es un "AI-powered health coach" casi idéntico en posicionamiento al nuestro. "Wren", "Vela", "Viora", "Lumora", "Syntra", "Aviora" y "Glymo" también descartados por colisión (ver sesión 2026-07-05). **Semmly** elegido: nod a semaglutida, sin colisión exacta verificada.
