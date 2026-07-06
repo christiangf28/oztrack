@@ -9,23 +9,23 @@ GLP-1 medication companion app (Ozempic, Wegovy, Mounjaro, Zepbound, Rybelsus, S
 
 ---
 
-## Estado actual (al cerrar sesión 2026-07-05)
+## Estado actual (al cerrar sesión 2026-07-05 noche — v2.0.0)
 
-**Código**: rama `main`, working tree limpio, todo pusheado. Último commit `baa68d3`.
-**i18n**: conversión completa a EN/ES en todas las pantallas (tabs, onboarding, auth, track/coach/progress/profile). Selector manual de idioma en Perfil → Ajustes. Pendiente menor: texto generado dinámicamente en `generateInsights()` (progress.tsx) y `useAchievements.ts` sigue en español.
-**Build de referencia**: perfil `preview` de EAS, build ID `dc8b0248-0c90-450e-a2dc-08791edfe8a5` (lanzado al cerrar esta sesión — verificar si terminó con `npx eas build:view dc8b0248-0c90-450e-a2dc-08791edfe8a5`).
-**Play Console**: app creada (package `com.getmilli.app`, nombre visible "Semmly"), content rating + data safety + público objetivo completados. Suscripción `premium` con planes `monthly` ($9.99) y `annual` ($59.99 + trial 7 días) — falta confirmar que la oferta del anual quedó guardada y todo en estado "Activo".
-**RevenueCat**: bug real corregido — faltaba `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY` en el entorno "preview" de EAS (solo estaba en "production"), por eso nunca aparecía ningún customer. Ya corregido en ambos entornos. Falta: crear el Offering espejo de los planes de Play Console, y otorgar `premium` a la cuenta de prueba del reviewer.
-**Cuenta de prueba (reviewer de Google)**: `christiangf28+milli-review@gmail.com` / `MilliReview2026!`, Supabase user ID `162b866f-89bb-4e70-965c-c085af684fa7`.
-**QA unlock**: botón temporal en el paywall (`EXPO_PUBLIC_QA_UNLOCK`, solo entorno preview) para bypasear el hard paywall en testing sin RevenueCat real. **Sacarlo antes del build para los 12 testers.**
-**Pendiente del usuario**: confirmar si habilitó Cloud Pub/Sub API en Google Cloud (lo pedimos, no confirmado).
+**🚫 BLOQUEANTE: Google rechazó la release de closed testing** por "Play Console Requirements": apps con funciones médicas declaradas (educación médica + gestión de medicamentos — reales en la app) requieren **cuenta de organización**, y la cuenta actual es personal. Decisión: constituir una **SpA en Chile** con objeto social amplio → D-U-N-S → cuenta org de Play → transferir la app. **Guía paso a paso en `C:\Users\chris\Desktop\Semmly\PLAN-CUENTA-ORGANIZACION.md`.** Timeline 2-6 semanas (D-U-N-S manda). Sin sideload a testers mientras tanto (decisión de Chris). NO redeclarar salud de menos: riesgo de strike.
+
+**Código**: rama `main`, todo commiteado. App **v2.0.0 / versionCode 2**. Sesión 2026-07-05(d-e): revisión profunda completa + 13 commits — coach seguro (mensajes persistidos server-side, validación de tamaño), fechas locales (lib/dates.ts), Track carga el log del día, suscripción reactiva (listener RC + focus), i18n 100% (notificaciones, push, logros, insights, legales), entitlement `Semmly Pro`, link RC en cada login, Google OAuth y Forgot Password removidos de v1, deps pesadas fuera (APK 128→89MB).
+**Edge Function coach**: DESPLEGADA y verificada e2e (primer deploy histórico; `ANTHROPIC_API_KEY` como secret; project-ref `wxorkmbztzoiupehfwfx`).
+**RevenueCat**: COMPLETO — productos `premium:monthly`/`premium:annual` (Play) attachados al entitlement **`Semmly Pro`** (renombrado por Chris; el código debe coincidir letra por letra), offering `default` con packages Annual/Monthly verificado por API. Reviewer con grant promocional lifetime. Link Supabase↔RC en cada sign-in (fix en _layout).
+**Sentry**: FUNCIONANDO (DSN real en EAS prod+preview y .env; primer evento capturado = robo-crawler de Google).
+**Play Console**: productos activos + trial anual activo, license testers (12 + Chris), ficha completa (screenshots en `store-assets/screenshots/` + textos). AAB v2.0.0 en `Desktop\Semmly\semmly-v2.0-closed-testing.aab` — listo para re-subir desde la cuenta de organización.
+**Cuenta de prueba (reviewer)**: `christiangf28+milli-review@gmail.com` / `MilliReview2026!`, Supabase ID `162b866f-89bb-4e70-965c-c085af684fa7` — con 14 días de logs sembrados y grant Semmly Pro.
+**Mensaje de bienvenida a testers**: redactado (EN/ES) — enviarlo solo cuando haya release aprobada (links de testing dan 404 antes).
 
 ### Cómo retomar
-1. Verificar build `dc8b0248...`, descargar/instalar APK en emulador o teléfono.
-2. Recorrer onboarding, tocar "QA unlock" en paywall, sacar 4-6 screenshots reales en inglés para Play Store.
-3. Terminar Play Console (oferta del plan anual) + crear Offering en RevenueCat.
-4. Cuando haya productos reales, otorgar `premium` a la cuenta de prueba en RevenueCat dashboard.
-5. Ver CHANGELOG.md → entrada "2026-07-05 (c)" para el detalle completo de esta sesión.
+1. Preguntar a Chris cómo va el trámite SpA/D-U-N-S (ver PLAN-CUENTA-ORGANIZACION.md en Desktop\Semmly).
+2. Si la cuenta org ya existe: transferir app → re-verificar suscripción/license testers/service account de RevenueCat → re-subir AAB v2.0.0 → closed testing.
+3. Mientras tanto: backlog v2.1 (medicamentos con mayúscula — faltan keys de los 8 IDs en locales; campo opcional "otro medicamento"; SecureStore >2048 bytes; ver memoria de Claude).
+4. IMPORTANTE al hablar con Chris: es de CHILE, sin voseo argentino.
 
 ---
 

@@ -4,6 +4,27 @@ Todas las fechas en formato YYYY-MM-DD. Idioma del changelog: español (comunica
 
 ## [Unreleased] — Fase 1: Monetización (hard paywall)
 
+### 2026-07-05 (d/e) — v2.0.0: revisión profunda, infra completa, release rechazada por tipo de cuenta
+
+**Código (13 commits)** — revisión profunda de todo el codebase + fixes aplicados:
+- Seguridad Coach: la Edge Function persiste los mensajes server-side (el rate limit ya no depende del cliente), valida forma/tamaño (≤4000 chars), stripMarkdown server-side. Cliente ya no inserta en chat_messages.
+- Fechas locales (`lib/dates.ts`): log del día, racha y calendario ya no usan UTC (antes se rompían de noche en América).
+- Track carga el log existente del día al enfocar (antes pisaba los datos con defaults). Peso acepta coma decimal.
+- Suscripción reactiva: listener de RevenueCat + re-check en focus (Coach/Progress). Progress recarga logs al enfocar.
+- i18n 100%: pantalla Notificaciones, contenido de push programadas, logros, insights y pantallas legales (Privacy/Terms) ahora respetan el idioma.
+- Entitlement `Semmly Pro` (renombrado en dashboard; código alineado). `logInRevenueCat` en cada sign-in vía onAuthStateChange (antes solo en registro → IDs anónimos).
+- Removidos de v1: botón Google OAuth (no funcional sin deep-linking) y "Forgot password" (sin flujo). Deps sin uso fuera (skia, victory-native, image-picker, promise): APK 128→89MB. types/index.ts muerto eliminado.
+- Delete account ahora hace signOut (el JWT quedaba en SecureStore). Badge theme-aware. Bump a v2.0.0/versionCode 2 (el vc1 ya estaba usado en Play).
+
+**Infraestructura**:
+- Edge Function `coach` desplegada por primera vez + `ANTHROPIC_API_KEY` como secret. Verificada e2e contra producción.
+- RevenueCat completo: productos Play `premium:monthly`/`premium:annual` + entitlement `Semmly Pro` + offering `default` (verificado por API). Grant promocional lifetime al reviewer.
+- Sentry activo (DSN real en EAS prod+preview). Primer evento capturado: robo-crawler de Google.
+- Play Console: license testers, ficha completa, screenshots reales (store-assets/screenshots/), AAB v2.0.0 subido a closed testing.
+- Cuenta reviewer sembrada con 14 días de datos realistas.
+
+**🚫 Rechazo de Google**: la release fue rechazada por "Play Console Requirements" — la declaración de salud (educación médica + gestión de medicamentos, funciones reales de la app) exige cuenta de ORGANIZACIÓN y la cuenta es personal. Plan: SpA en Chile con giro amplio → D-U-N-S → cuenta org ($25) → transferir la app. Guía en `Desktop\Semmly\PLAN-CUENTA-ORGANIZACION.md`. Sin sideload a testers mientras tanto.
+
 ### 2026-07-05 (c) — Play Console + RevenueCat en curso, i18n completo, fixes de testing
 
 **Play Console (en progreso, no terminado)**
