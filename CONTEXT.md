@@ -9,9 +9,11 @@ GLP-1 medication companion app (Ozempic, Wegovy, Mounjaro, Zepbound, Rybelsus, S
 
 ---
 
-## Estado actual (al cerrar sesión 2026-07-05 noche — v2.0.0)
+## Estado actual (al cerrar sesión 2026-07-06 — v2.0.0)
 
-**🚫 BLOQUEANTE: Google rechazó la release de closed testing** por "Play Console Requirements": apps con funciones médicas declaradas (educación médica + gestión de medicamentos — reales en la app) requieren **cuenta de organización**, y la cuenta actual es personal. Decisión: constituir una **SpA en Chile** con objeto social amplio → D-U-N-S → cuenta org de Play → transferir la app. **Guía paso a paso en `C:\Users\chris\Desktop\Semmly\PLAN-CUENTA-ORGANIZACION.md`.** Timeline 2-6 semanas (D-U-N-S manda). Sin sideload a testers mientras tanto (decisión de Chris). NO redeclarar salud de menos: riesgo de strike.
+**🚫 BLOQUEANTE: Google rechazó la release de closed testing** por "Play Console Requirements": apps con funciones médicas declaradas (educación médica + gestión de medicamentos — reales en la app) requieren **cuenta de organización**, y la cuenta actual es personal. Decisión: constituir una **SpA en Chile** con objeto social amplio → D-U-N-S → cuenta org de Play → transferir la app. **Todo el detalle de la empresa/trámite (no del código) vive en `Desktop\Documentos\Maqui Salud Digital SpA\CONTEXTO-EMPRESA.md` y en `Desktop\Semmly\PLAN-CUENTA-ORGANIZACION.md` — leer esos archivos primero para retomar el hilo del trámite.** Timeline 2-6 semanas (D-U-N-S manda). Sin sideload a testers mientras tanto (decisión de Chris). NO redeclarar salud de menos: riesgo de strike.
+
+**Avance del trámite (al 2026-07-07, resumen — detalle completo en CONTEXTO-EMPRESA.md):** SpA **Maqui Salud Digital SpA** constituida, RUT **78.462.382-3**. ✅ Inicio de Actividades SII confirmado y aprobado. 🔄 D-U-N-S en curso (gratis, vía dnb.com opción "I'm a Google developer"; formulario extenso de D&B ya completado). Falta: cuenta de organización Play (US$25, requiere D-U-N-S) → transferir la app.
 
 **Código**: rama `main`, todo commiteado. App **v2.0.0 / versionCode 2**. Sesión 2026-07-05(d-e): revisión profunda completa + 13 commits — coach seguro (mensajes persistidos server-side, validación de tamaño), fechas locales (lib/dates.ts), Track carga el log del día, suscripción reactiva (listener RC + focus), i18n 100% (notificaciones, push, logros, insights, legales), entitlement `Semmly Pro`, link RC en cada login, Google OAuth y Forgot Password removidos de v1, deps pesadas fuera (APK 128→89MB).
 **Edge Function coach**: DESPLEGADA y verificada e2e (primer deploy histórico; `ANTHROPIC_API_KEY` como secret; project-ref `wxorkmbztzoiupehfwfx`).
@@ -22,9 +24,14 @@ GLP-1 medication companion app (Ozempic, Wegovy, Mounjaro, Zepbound, Rybelsus, S
 **Mensaje de bienvenida a testers**: redactado (EN/ES) — enviarlo solo cuando haya release aprobada (links de testing dan 404 antes).
 
 ### Cómo retomar
-1. Preguntar a Chris cómo va el trámite SpA/D-U-N-S (ver PLAN-CUENTA-ORGANIZACION.md en Desktop\Semmly).
-2. Si la cuenta org ya existe: transferir app → re-verificar suscripción/license testers/service account de RevenueCat → re-subir AAB v2.0.0 → closed testing.
-3. Mientras tanto: backlog v2.1 (medicamentos con mayúscula — faltan keys de los 8 IDs en locales; campo opcional "otro medicamento"; SecureStore >2048 bytes; ver memoria de Claude).
+1. Leer `Desktop\Documentos\Maqui Salud Digital SpA\CONTEXTO-EMPRESA.md` (estado de la SpA/trámites) y `Desktop\Semmly\PLAN-CUENTA-ORGANIZACION.md` (guía paso a paso del trámite) — ninguno de los dos es código, son el hilo de la empresa.
+2. Si D-U-N-S ya llegó y la cuenta org de Play ya existe: transferir app → re-verificar suscripción/license testers/service account de RevenueCat → re-subir AAB v2.0.0 → closed testing.
+3. Mientras tanto, backlog v2.1 (pedidos de Chris 2026-07-05, no bloqueante):
+   - Lista de medicamentos con mayúscula inicial: los IDs `ozempic`/`wegovy`/`mounjaro`/`zepbound`/`rybelsus`/`saxenda`/`victoza`/`trulicity` no tienen entrada en `onboarding.medication.meds.*` de los locales (solo existen los viejos semaglutide/tirzepatide/etc.) → agregar las 8 keys en en.ts/es.ts.
+   - "Other medication": campo de texto opcional para el nombre (modal de Profile + onboarding). Se guarda en `users.medication` sin migración (MED_LABEL hace fallback al valor crudo).
+   - Dosis opcional: POSTERGADO — contradice la Privacy Policy publicada ("no recolectamos dosis"), acerca a app médica, el Coach tiene prohibido hablar de dosis. Reevaluar con feedback de testers.
+   - Warning "SecureStore value larger than 2048 bytes" (sesión JWT Supabase): funciona hoy, migrar a AsyncStorage + refresh token en SecureStore antes de que futuras versiones de Expo lo hagan error.
+   - Menores: tokens de color repetidos (#5BA8D0/gradientes), ThemeContext useMemo, weightUnit no persistido, columna `energy` vestigial, mensajes intro del coach no persistidos, evaluar Haiku 4.5 en vez de Sonnet para el coach (costo).
 4. IMPORTANTE al hablar con Chris: es de CHILE, sin voseo argentino.
 
 ---
